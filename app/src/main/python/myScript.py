@@ -1,6 +1,13 @@
+# Reference: https://www.pyimagesearch.com/2018/09/24/opencv-face-recognition/
+# Files imported into python directory
+# - le.pickle
+# - recognizer.pickle
+# - face_embeddings.pickle
+
 import os
 import numpy as np
 import pickle
+import imutils
 import cv2
 import base64
 from sklearn import preprocessing, svm
@@ -14,34 +21,6 @@ def box_axis(value):
         return f"{x1} {y1} {x2} {y2}"
     return "no values"
 
-def create_recognizer_and_labels():
-
-    # Load Face Embeddings
-    face_embeddings_filename = os.path.join(os.path.dirname(__file__), "face_embeddings.pickle")
-    face_embeddings_pickle_out = open(face_embeddings_filename, 'rb')
-    face_embeddings = pickle.load(face_embeddings_pickle_out)
-
-    le = preprocessing.LabelEncoder()
-    labels = le.fit_transform(face_embeddings['names'])
-
-    # Train Recognizer
-    recognizer = svm.SVC(C=1.0, kernel="linear", probability=True)
-    recognizer.fit(face_embeddings["embeddings"], labels)
-
-    # To Pickle
-    le_filename = os.path.join(os.path.dirname(__file__), "le.pickle")
-    le_pickle_out = open(le_filename, 'wb')
-    pickle.dump(le, le_pickle_out)
-    le_pickle_out.close()
-
-    recognizer_filename = os.path.join(os.path.dirname(__file__), "recognizer.pickle")
-    recognizer_pickle_in = open(recognizer_filename, 'wb')
-    pickle.dump(recognizer, recognizer_pickle_in)
-    recognizer_pickle_in.close()
-
-    return "Success"
-
-
 def detect_faces(image_data):
 
     # Decode Image Data and Convert To Numpy
@@ -50,21 +29,22 @@ def detect_faces(image_data):
     image_4_channels = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
     image = image_4_channels[...,:3]
 
-    # Load Neural Network
+    # Load Detector
     prototxt_filename = os.path.join(os.path.dirname(__file__), "deploy.prototxt")
     weight_filename = os.path.join(os.path.dirname(__file__), "res10_300x300_ssd_iter_140000.caffemodel")
-    net = cv2.dnn.readNetFromCaffe(prototxt_filename, weight_filename)
+    detector = cv2.dnn.readNetFromCaffe(prototxt_filename, weight_filename)
+
+    resized_image = imutils.resize(image, width=600)
 
     # Image BLOB (Binary Large Object) - prepare image for classification by the model
     # image, scaling, spatial size, mean subtraction
-    resized_image = cv2.resize(image, (300, 300))
-    blob = cv2.dnn.blobFromImage(resized_image, 1.0, (300, 300), (104.0, 177.0, 123.0))
+    blob = cv2.dnn.blobFromImage(cv2.resize(resized_image, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0), swapRB=False, crop=False)
 
     # Face Detection
-    net.setInput(blob)
-    detections = net.forward()
+    detector.setInput(blob)
+    detections = detector.forward()
 
-    return detections, image
+    return detections, resized_image
 
 
 def do_detect_faces(image_data):
@@ -114,7 +94,7 @@ def recognize_face(image_data):
             # Features of ROI
             if roiH >= 20 or roiW >= 20:
                 try:
-                    roiBlob = cv2.dnn.blobFromImage(roi, 1.0 / 255, (96, 96), swapRB=True, crop=False)
+                    roiBlob = cv2.dnn.blobFromImage(roi, 1.0 / 255, (96, 96), (0, 0, 0), swapRB=True, crop=False)
                 except:
                     break
                 embedder.setInput(roiBlob)
@@ -129,9 +109,6 @@ def recognize_face(image_data):
                 faces_recognized[i] = [face_recognized_name, probability, box]
 
     return faces_recognized
-
-
-
 
 
 def type_of(value):
