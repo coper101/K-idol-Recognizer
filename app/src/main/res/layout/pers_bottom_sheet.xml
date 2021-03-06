@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/pers_bottom_sheet_bg"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+    app:behavior_hideable="false"
+    app:behavior_peekHeight="200dp"
+    android:paddingHorizontal="20dp"
+    android:paddingVertical="25dp">
+
+    <TextView
+        android:id="@+id/stage_name_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/TextAppearance.MaterialComponents.Headline5"
+        android:text="Stage Name"
+        android:textFontWeight="500"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/real_name_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/TextAppearance.MaterialComponents.Headline6"
+        android:text="Real Name"
+        android:textFontWeight="300"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/role_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/TextAppearance.MaterialComponents.Headline6"
+        android:text="Roles"
+        android:textFontWeight="300"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/description_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="15dp"
+        style="@style/TextAppearance.MaterialComponents.Body1"
+        android:text="Description"
+        android:textFontWeight="300"
+        android:textColor="@color/black"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="3">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1">
+            <TextView
+                android:id="@+id/height_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                style="@style/TextAppearance.MaterialComponents.Subtitle2"
+                android:gravity="center"
+                android:text="Height"
+                android:textColor="@color/black"
+                android:textFontWeight="300"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1">
+            <TextView
+                android:id="@+id/weight_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                style="@style/TextAppearance.MaterialComponents.Subtitle2"
+                android:gravity="center"
+                android:text="Weight"
+                android:textColor="@color/black"
+                android:textFontWeight="300"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1">
+            <TextView
+                android:id="@+id/blood_type_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                style="@style/TextAppearance.MaterialComponents.Subtitle2"
+                android:gravity="center"
+                android:text="Blood Type"
+                android:textColor="@color/black"
+                android:textFontWeight="300"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

@@ -13,6 +13,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -30,6 +31,8 @@ import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -49,8 +52,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.nio.Buffer;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,9 +67,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private ExecutorService cameraExecutor;
     private Python python;
+    private MyData myData = MyData.getMyData();
 
     private PreviewView viewFinder;
-    private TextView detectionsTextView;
     private ImageView ivBitmap;
     private AppCompatButton recognizerButton;
 
@@ -102,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Views
         viewFinder = findViewById(R.id.viewFinder);
-        detectionsTextView = findViewById(R.id.detections_text_view);
         ivBitmap = findViewById(R.id.ivBitmap);
         recognizerButton = findViewById(R.id.recognizer_button);
 
@@ -115,6 +119,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Button is Clicked
         recognizerButton.setOnClickListener(this);
+
+        // Retrieve Idols & Set in My Data
+        String jsonString = jsonToString(getApplicationContext(), "idols.json");
+        List<Idol> idols = idolList(jsonString);
+        myData.setIdolList(idols);
+        for (Idol idol: myData.getIdolList()) {
+            Log.e(TAG, idol.toString());
+        }
 
 
     } // <--- end of onCreate --->
@@ -154,19 +166,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .build();
 
             imageAnalyzer.setAnalyzer(cameraExecutor, image -> {
-                Log.d(TAG, "Image Info: " + image.getImageInfo());
+//                Log.d(TAG, "Image Info: " + image.getImageInfo());
 
-                // Get Bitmap Frame of the Camera
-                Bitmap bitmapFrame = viewFinder.getBitmap();
-
-                if (bitmapFrame == null)
-                    return;
+                // Set the Bitmap to the Current Frame
+//                Bitmap bitmapFrame = viewFinder.getBitmap();
+//
+//                if (bitmapFrame == null)
+//                    return;
+//
+//                myData.setBitmapFrame(bitmapFrame);
 
                 // Show Recognized Face
-                if (pyObject != null) {
-                    PyObject detectFacesObj = pyObject.callAttr("recognize_face", encodeBitmapImage(bitmapFrame));
-                    setDetectionsText(detectFacesObj.toString());
-                }
+//                if (pyObject != null) {
+//                    PyObject detectFacesObj = pyObject.callAttr("recognize_face", encodeBitmapImage(bitmapFrame));
+//                    setDetectionsText(detectFacesObj.toString());
+//                }
 
                 image.close();
             });
@@ -217,6 +231,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // image analysis is called again
         if (allPermissionsGranted()) {
             startCamera();
+            Log.d(TAG, "image analysis started");
         }
     }
 
@@ -229,14 +244,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // ===========================================================================================
     // Set the Text of View outside the main
-    private void setDetectionsText(String value){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                detectionsTextView.setText(value);
-            }
-        });
-    }
+//    private void setDetectionsText(String value){
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                detectionsTextView.setText(value);
+//            }
+//        });
+//    }
 
     // ===========================================================================================
     private String encodeBitmapImage(Bitmap bitmap) {
@@ -246,13 +261,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return android.util.Base64.encodeToString(imageBytes, Base64.DEFAULT);
     }
 
+    // ===========================================================================================
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.recognizer_button:
-                Toast.makeText(getApplicationContext(), "Clicked", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getApplicationContext(), MainActivity2.class);
+                // Set the Bitmap to the Current Frame & Navigate to Main 2
+                Bitmap bitmapFrame = viewFinder.getBitmap();
+                if (bitmapFrame != null) {
+                    myData.setBitmapFrame(bitmapFrame);
+                    startActivity(intent);
+                }
                 break;
         }
+    }
+
+    // ===========================================================================================
+    private String jsonToString(Context context, String fileName) {
+        AssetManager assetManager = context.getAssets();
+        String jsonString = null;
+        try {
+            InputStream is = assetManager.open(fileName);
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            jsonString = new String(buffer, "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return jsonString;
+    }
+
+    // ===========================================================================================
+    private List<Idol> idolList(String jsonString) {
+        Gson gson = new Gson();
+        Type listIdolsType = new TypeToken<List<Idol>>(){}.getType();
+        return gson.fromJson(jsonString, listIdolsType);
     }
 
 } // <---  end of MainActivity ! --->
