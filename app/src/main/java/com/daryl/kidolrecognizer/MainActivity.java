@@ -6,7 +6,6 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
-import androidx.camera.core.impl.ImageAnalysisConfig;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
@@ -18,42 +17,26 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
-import org.opencv.dnn.Dnn;
-import org.opencv.dnn.Net;
-import org.opencv.imgproc.Imgproc;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -70,8 +53,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MyData myData = MyData.getMyData();
 
     private PreviewView viewFinder;
-    private ImageView ivBitmap;
     private AppCompatButton recognizerButton;
+    private ChipGroup groupsChipGroup;
+    private Chip btsChip, blackpinkChip, twiceChip, redVelvetChip;
 
     // Access to Module
     PyObject pyObject;
@@ -105,10 +89,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         cameraExecutor = Executors.newSingleThreadExecutor();
 
-        // Views
-        viewFinder = findViewById(R.id.viewFinder);
-        ivBitmap = findViewById(R.id.ivBitmap);
-        recognizerButton = findViewById(R.id.recognizer_button);
+        // Initialize Views
+        initViews();
 
         // Check Python is Started
         if (! Python.isStarted()) {
@@ -120,17 +102,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Button is Clicked
         recognizerButton.setOnClickListener(this);
 
-        // Retrieve Idols & Set in My Data
-        String jsonString = jsonToString(getApplicationContext(), "idols.json");
-        List<Idol> idols = idolList(jsonString);
-        myData.setIdolList(idols);
-        for (Idol idol: myData.getIdolList()) {
-            Log.e(TAG, idol.toString());
-        }
+        // Chip is Clicked
+        btsChip.setOnClickListener(this); blackpinkChip.setOnClickListener(this);
+        twiceChip.setOnClickListener(this); redVelvetChip.setOnClickListener(this);
 
+        // Retrieve Idols & Set in My Data
+        retrieveIdols();
 
     } // <--- end of onCreate --->
 
+
+    // ===========================================================================================
+    private void initViews() {
+        viewFinder = findViewById(R.id.viewFinder);
+        recognizerButton = findViewById(R.id.recognizer_button);
+
+        groupsChipGroup = findViewById(R.id.idol_group_chip_group);
+        btsChip = findViewById(R.id.bts_chip);
+        blackpinkChip = findViewById(R.id.blackpink_chip);
+        twiceChip = findViewById(R.id.twice_chip);
+        redVelvetChip = findViewById(R.id.red_velvet_chip);
+    }
 
     // ===========================================================================================
     // CameraX References:
@@ -267,13 +259,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.recognizer_button:
                 Intent intent = new Intent(getApplicationContext(), MainActivity2.class);
-                // Set the Bitmap to the Current Frame & Navigate to Main 2
+                // Set the Bitmap to the Current Frame & Navigate to Main Activity 2
                 Bitmap bitmapFrame = viewFinder.getBitmap();
                 if (bitmapFrame != null) {
                     myData.setBitmapFrame(bitmapFrame);
+                    ArrayList<String> checkedGroupNames = checkChipIdsToGroupNames(groupsChipGroup.getCheckedChipIds());
+                    myData.setCheckedGroupNames(checkedGroupNames);
+                    Log.e(TAG, myData.checkedGroupNames.toString());
                     startActivity(intent);
                 }
                 break;
+            case R.id.bts_chip:
+                Toast.makeText(getApplicationContext(), "BTS", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.blackpink_chip:
+                Toast.makeText(getApplicationContext(), "BP", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.twice_chip:
+                Toast.makeText(getApplicationContext(), "TWICE", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.red_velvet_chip:
+                Toast.makeText(getApplicationContext(), "RV", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                Toast.makeText(getApplicationContext(), "onClick Invoked", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // ===========================================================================================
+    private void retrieveIdols() {
+        String jsonString = jsonToString(getApplicationContext(), "idols.json");
+        List<Idol> idols = idolList(jsonString);
+        myData.setIdolList(idols);
+        for (Idol idol: myData.getIdolList()) {
+            Log.e(TAG, idol.toString());
         }
     }
 
@@ -300,5 +319,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Type listIdolsType = new TypeToken<List<Idol>>(){}.getType();
         return gson.fromJson(jsonString, listIdolsType);
     }
+
+    // ===========================================================================================
+    private ArrayList<String> checkChipIdsToGroupNames(List<Integer> checkChipIds) {
+        ArrayList<String> checkedGroupNames = new ArrayList<>();
+        for (int checkChipId: checkChipIds) {
+            switch (checkChipId) {
+                case R.id.bts_chip:
+                    checkedGroupNames.add("Bts");
+                    break;
+                case R.id.blackpink_chip:
+                    checkedGroupNames.add("Blackpink");
+                    break;
+                case R.id.twice_chip:
+                    checkedGroupNames.add("Twice");
+                    break;
+                case R.id.red_velvet_chip:
+                    checkedGroupNames.add("Red Velvet");
+                    break;
+            }
+        }
+        return checkedGroupNames;
+    }
+
 
 } // <---  end of MainActivity ! --->

@@ -15,26 +15,179 @@
         android:layout_height="match_parent"
         android:visibility="visible"/>
 
+<!--    <ImageView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:src="@drawable/ic_baseline_center_focus_weak_24"/>-->
+
+    <!-- Bottom Controls -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:src="@drawable/gradient_bg"
+        android:background="@drawable/gradient_bg">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="3">
+
+            <!-- Favorite Groups (Multi-Stan) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center">
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/my_groups_button"
+                    android:layout_width="85dp"
+                    android:layout_height="85dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="15dp"
+                    android:padding="20dp"
+                    android:drawableStart="@drawable/ic_upload_idol"
+                    android:background="@null"
+                    android:drawableTint="@color/white"/>
+            </LinearLayout>
+
+            <!-- Recognize Idol -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center">
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/recognizer_button"
+                    android:layout_width="85dp"
+                    android:layout_height="85dp"
+                    android:background="@drawable/recognize_circular_button"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="15dp"
+                    android:padding="20dp"/>
+            </LinearLayout>
+
+            <!-- Bias List -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center">
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/bias_list_button"
+                    android:layout_width="85dp"
+                    android:layout_height="85dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="15dp"
+                    android:padding="0dp"
+                    android:drawableStart="@drawable/ic_heart_list"
+                    android:background="@null"
+                    android:drawableTint="@color/white"/>
+            </LinearLayout>
 
         </LinearLayout>
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/recognizer_button"
-            android:layout_width="85dp"
-            android:layout_height="85dp"
-            android:background="@drawable/recognize_circular_button"
-            android:layout_margin="40dp"
-            android:padding="20dp"
-            android:layout_gravity="center_horizontal"/>
+        <!-- Filter -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:orientation="horizontal"
+            android:paddingVertical="5dp"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/idol_group_chip_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:chipSpacingHorizontal="10dp"
+                android:padding="8dp"
+                android:layout_marginBottom="20dp"
+                app:selectionRequired="true"
+                app:singleLine="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/bts_chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:text="BTS"
+                    android:checkable="true"
+                    app:chipSurfaceColor="@android:color/transparent"
+                    android:textColor="@color/white"
+                    app:chipStrokeColor="#80FFFFFF"
+                    app:checkedIconVisible="true"
+                    app:checkedIconTint="@color/white"
+                    android:background="@null"
+                    app:chipStrokeWidth="1dp"
+                    app:chipCornerRadius="10dp"
+                    app:chipMinHeight="55dp"
+                    app:chipStartPadding="10dp"
+                    app:chipEndPadding="10dp"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/blackpink_chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    app:chipSurfaceColor="@android:color/transparent"
+
+                    android:text="Blackpink"
+                    app:checkedIconVisible="true"
+                    app:checkedIconTint="@color/white"
+                    android:textColor="@color/white"
+                    android:checkable="true"
+                    app:chipCornerRadius="10dp"
+                    app:chipStrokeColor="#80FFFFFF"
+                    android:background="@null"
+                    app:chipStrokeWidth="1dp"
+                    app:chipMinHeight="50dp"
+                    app:chipStartPadding="10dp"
+                    app:chipEndPadding="10dp"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/twice_chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    app:chipSurfaceColor="@android:color/transparent"
+                    android:text="Twice"
+                    app:checkedIconVisible="true"
+                    app:checkedIconTint="@color/white"
+                    android:checkable="true"
+                    android:textColor="@color/white"
+                    app:chipCornerRadius="10dp"
+                    app:chipStrokeColor="#80FFFFFF"
+                    android:background="@null"
+                    app:chipStrokeWidth="1dp"
+                    app:chipMinHeight="55dp"
+                    app:chipStartPadding="10dp"
+                    app:chipEndPadding="10dp"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/red_velvet_chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    app:chipSurfaceColor="@android:color/transparent"
+                    android:checkable="true"
+                    app:checkedIconVisible="true"
+                    app:checkedIconTint="@color/white"
+                    app:chipCornerRadius="10dp"
+                    android:text="Red Velvet"
+                    android:background="@null"
+                    android:textColor="@color/white"
+                    app:chipStrokeColor="#80FFFFFF"
+                    app:chipStrokeWidth="1dp"
+                    app:chipMinHeight="55dp"
+                    app:chipStartPadding="10dp"
+                    app:chipEndPadding="10dp"/>
+
+
+            </com.google.android.material.chip.ChipGroup>
+
+        </HorizontalScrollView>
 
     </LinearLayout>
 

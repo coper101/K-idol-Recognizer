@@ -7,13 +7,13 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity2">
 
-    <!-- Face Detected -->
+    <!-- Face Captured -->
     <ImageView
         android:id="@+id/face_image_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <!-- App Bar -->
+    <!-- Top App Bar -->
     <com.google.android.material.appbar.AppBarLayout
         android:fitsSystemWindows="true"
         android:layout_width="match_parent"
@@ -29,9 +29,23 @@
             android:layout_height="?actionBarSize"
             app:title="Title"
             app:navigationIcon="@drawable/ic_baseline_arrow_back_ios_new_24"/>
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Persistent Bottom Sheet -->
     <include layout="@layout/pers_bottom_sheet" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add_as_bias_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="10dp"
+        android:src="@drawable/ic_heart_list"
+        app:borderWidth="0dp"
+        android:elevation="0dp"
+        android:outlineProvider="none"
+        app:layout_anchor="@id/persistent_bottom_sheet"
+        app:layout_anchorGravity="end"
+        android:tint="@color/white"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

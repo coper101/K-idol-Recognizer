@@ -2,6 +2,7 @@ package com.daryl.kidolrecognizer;
 
 import android.graphics.Bitmap;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // Singleton Pattern
@@ -11,6 +12,7 @@ public class MyData {
 
     Bitmap bitmapFrame;
     List<Idol> idolList;
+    ArrayList<String> checkedGroupNames;
 
     // Instantiation only allowed within this class
     private MyData() {}
@@ -34,6 +36,14 @@ public class MyData {
 
     public void setIdolList(List<Idol> idolList) {
         this.idolList = idolList;
+    }
+
+    public ArrayList<String> getCheckedGroupNames() {
+        return checkedGroupNames;
+    }
+
+    public void setCheckedGroupNames(ArrayList<String> checkedGroupNames) {
+        this.checkedGroupNames = checkedGroupNames;
     }
 
     public int getIdolIndex(String stageName) {
