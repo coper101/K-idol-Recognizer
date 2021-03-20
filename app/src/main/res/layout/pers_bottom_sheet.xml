@@ -11,7 +11,8 @@
     app:behavior_hideable="false"
     app:behavior_peekHeight="200dp"
     android:paddingHorizontal="20dp"
-    android:paddingVertical="25dp">
+    android:paddingVertical="25dp"
+    android:animateLayoutChanges="false">
 
     <TextView
         android:id="@+id/stage_name_text_view"

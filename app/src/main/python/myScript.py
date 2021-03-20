@@ -11,15 +11,8 @@ import imutils
 import cv2
 import base64
 from sklearn import preprocessing, svm
+import face_recognition
 
-def box_axis(value):
-    if len(value) == 4:
-        x1 = value[0]
-        y1 = value[1]
-        x2 = value[2]
-        y2 = value[3]
-        return f"{x1} {y1} {x2} {y2}"
-    return "no values"
 
 def detect_faces(image_data):
 
@@ -45,11 +38,6 @@ def detect_faces(image_data):
     detections = detector.forward()
 
     return detections, resized_image
-
-
-def do_detect_faces(image_data):
-    detections, image = detect_faces(image_data)
-    return detections.shape
 
 
 def recognize_face(image_data):
@@ -111,22 +99,46 @@ def recognize_face(image_data):
     return faces_recognized
 
 
-def type_of(value):
-    return type(value)
-
-
-def image_shape(image_data):
+def detect_face_fr(image_data):
+    # Decode Image Data and Convert To Numpy
     decode_data = base64.b64decode(image_data)
     np_data = np.fromstring(decode_data, np.uint8)
-    image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
-    return image.shape
+    image_4_channels = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
+    img = image_4_channels[...,:3]
 
-def create_path():
+    labels, encodings = retrieve_encodings_labels()
 
-    files = []
-    for dir_path, sub_dir_names, file_names in os.walk(os.path.dirname(__file__)):
-        for file_name in file_names:
-            files.append(file_name)
+    # Using Face Recognition
+    imgSmall = cv2.resize(img, (0, 0), None, 0.25, 0.25)
+    imgSmall = cv2.cvtColor(imgSmall, cv2.COLOR_BGR2RGB)
 
-    # embedder_filename = os.path.join(os.path.dirname(__file__), "res10_300x300_ssd_iter_140000.caffemodel")
-    return os.path.dirname(__file__)
+    facesCurFrame = face_recognition.face_locations(imgSmall)
+    encodesCurFrame = face_recognition.face_encodings(imgSmall, facesCurFrame)
+
+    # Loop Faces for Current Frame
+    names = []
+    for encodeFace, faceLoc in zip(encodesCurFrame, facesCurFrame):
+        matches = face_recognition.compare_faces(encodings, encodeFace)
+        faceDis = face_recognition.face_distance(encodings, encodeFace)
+        matchIndex = np.argmin(faceDis)
+
+        if matches[matchIndex]:
+            name = labels[matchIndex].upper()
+            names.append(name)
+
+    return names
+
+
+def retrieve_encodings_labels():
+
+    lblFileName = os.path.join(os.path.dirname(__file__), "labels.pickle")
+    lblFile = open(lblFileName, "rb")
+    labels = pickle.load(lblFile)
+    lblFile.close()
+
+    encFileName = os.path.join(os.path.dirname(__file__), "encodings.pickle")
+    encFile = open(encFileName, "rb")
+    encodings = pickle.load(encFile)
+    encFile.close()
+
+    return labels, encodings

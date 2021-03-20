@@ -191,4 +191,7 @@
 
     </LinearLayout>
 
+    <!-- Persistent Bottom Sheet -->
+    <include layout="@layout/pers_bottom_sheet" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

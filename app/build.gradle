@@ -18,7 +18,8 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            // "x86", "x86_64" - for android emulators
+            abiFilters "armeabi-v7a", "arm64-v8a"
         }
 
         sourceSets {
@@ -37,6 +38,8 @@ android {
                 install "numpy"
                 install "opencv-python==4.1.2.30"
                 install "imutils"
+                install "dlib"
+                install "face_recognition"
             }
         }
     }

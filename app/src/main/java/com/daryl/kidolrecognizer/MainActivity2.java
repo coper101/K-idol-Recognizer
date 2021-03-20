@@ -1,10 +1,12 @@
 package com.daryl.kidolrecognizer;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -13,6 +15,7 @@ import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.ByteArrayOutputStream;
@@ -111,29 +114,56 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
     private void showIdolDesc() {
         if (pyObject != null) {
             // Pass the Group/s Selected (Filter)
-            PyObject faces_recognized = pyObject.callAttr("recognize_face", encodeBitmapImage(bitmapImage));
-            if (!faces_recognized.toString().equals("{}")) {
-                String idolName = faces_recognized.asMap().get(0).asList().get(0).toString();
-                int idolIndex = myData.getIdolIndex(idolName);
-                if (idolIndex != -1) {
-                    Idol idol = myData.idolList.get(idolIndex);
-                    topAppBar.setTitle(idol.getGroupName());
-                    stageNameTV.setText(idol.getStageName());
-                    realNameTV.setText(idol.getRealName());
-                    roleTV.setText(idol.getRole());
-                    descTV.setText(idol.getDescription());
-                    heightTV.setText(idol.getHeight());
-                    weightTV.setText(idol.getWeight());
-                    bloodTypeTV.setText(idol.getBloodType());
-                }
-            } else {
-                topAppBar.setTitle("");
-                stageNameTV.setText("No Face Detected"); realNameTV.setText("");
-                roleTV.setText(""); descTV.setText("");
-                heightTV.setText(""); weightTV.setText(""); bloodTypeTV.setText("");
-                addAsBiasFAB.hide();
-            }
+//            PyObject faces_recognized = pyObject.callAttr("recognize_face", encodeBitmapImage(bitmapImage));
+//            if (!faces_recognized.toString().equals("{}")) {
+//                Log.e(TAG, faces_recognized.toString());
+//                String idolName = faces_recognized.asMap().get(0).asList().get(0).toString();
+//                int idolIndex = myData.getIdolIndex(idolName);
+//                if (idolIndex != -1) {
+//                    Idol idol = myData.idolList.get(idolIndex);
+//                    topAppBar.setTitle(idol.getGroupName());
+//                    stageNameTV.setText(idol.getStageName());
+//                    realNameTV.setText(idol.getRealName());
+//                    roleTV.setText(idol.getRole());
+//                    descTV.setText(idol.getDescription());
+//                    heightTV.setText(idol.getHeight());
+//                    weightTV.setText(idol.getWeight());
+//                    bloodTypeTV.setText(idol.getBloodType());
+//                }
+//            } else {
+//                topAppBar.setTitle("");
+//                stageNameTV.setText("No Match"); realNameTV.setText("");
+//                roleTV.setText(""); descTV.setText("");
+//                heightTV.setText(""); weightTV.setText(""); bloodTypeTV.setText("");
+//                addAsBiasFAB.hide();
+//            }
+
+            PyObject face_detect_fr = pyObject.callAttr("detect_face_fr", encodeBitmapImage(bitmapImage));
+            Log.e(TAG, face_detect_fr.toString());
         }
+
+
     }
 
+    private static class Behavior extends BottomSheetBehavior.BottomSheetCallback {
+        // Handle Bottom Sheet Behavior
+        @Override
+        public void onStateChanged(@NonNull View bottomSheet, int newState) {
+            switch (newState) {
+                case BottomSheetBehavior.STATE_EXPANDED:
+                    Log.e(TAG, "onStateChanged - Sheet Expanded");
+                    break;
+                case BottomSheetBehavior.STATE_COLLAPSED:
+                    Log.e(TAG, "onStateChanged - Sheet Collapsed");
+                    break;
+                case BottomSheetBehavior.STATE_HALF_EXPANDED:
+                    Log.e(TAG, "onStateChanged - Sheet Half-Expanded");
+                    break;
+            }
+        }
+        @Override
+        public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+        }
+    }
 }

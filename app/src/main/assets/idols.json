@@ -9,7 +9,7 @@
     "zodiac": "Pisces",
     "groupName": "BTS",
     "role": "Lead Rapper",
-    "description": "Suga is one of very talented and He is a South Korean rapper, songwriter and also music producer. He studied in Taejeon Elementary School, Gwaneum Middle School, and  Apgujeong High School."
+    "description": "Suga is a rapper, songwriter and music producer. He studied in Taejeon Elementary School, Gwaneum Middle School, and Apgujeong High School."
   },
   {
     "stageName": "RM",
@@ -21,7 +21,7 @@
     "zodiac": "Virgo",
     "groupName": "BTS",
     "role": "Leader, Main Rapper",
-    "description": "Rm is the oldest member means he is the first who join and main rapper among the them since 2010 and the leader of the group. He is a song writer and music producer. His Rapping skill is amazing that’s why he  formerly called as rap monster by his fans."
+    "description": "Rm is the leader of the group and he is also the oldest member in their group. He is a song writer and music producer. His Rapping skill is amazing that’s why he formerly called as rap monster by his fans."
   },
   {
     "stageName": "Jin",
@@ -33,10 +33,10 @@
     "zodiac": "Sagittarius",
     "groupName": "BTS",
     "role": "Vocalist, Visual",
-    "description": "Jin loves to play games, take selfies and cook"
+    "description": "Jin loves to play games, take selfies and cook."
   },
   {
-    "stageName": "J-hope",
+    "stageName": "Jhope",
     "realName": "Jung Hoseok",
     "dateOfBirth": "February 18, 1994",
     "height": "177cm",
@@ -45,7 +45,7 @@
     "zodiac": "Aquarius",
     "groupName": "BTS",
     "role": "Main Dancer, Rapper, Sub Vocalist",
-    "description": "J-Hope likes to listen to music on his free time and participated in the underground dance team Neuron and won prizes for his dance."
+    "description": "J-Hope likes to listen to music during his free time."
   },
   {
     "stageName": "Jimin",
@@ -72,7 +72,7 @@
     "description": "V stands for Victory. He was born in Daegu. He made his acting debut with a supporting role or character in “KBS2‘s historical drama Hwarang: The Poet Warrior Youth”  with  his real name in 2017."
   },
   {
-    "stageName": "Jungook",
+    "stageName": "Jungkook",
     "realName": "Jeon Jungkook",
     "dateOfBirth": "September 1, 1997",
     "height": "178cm",
@@ -81,6 +81,6 @@
     "zodiac": "Virgo",
     "groupName": "BTS",
     "role": "Main Vocalist, Lead Dancer. Sub Rapper, Center, Maknae",
-    "description": "jungkook is the Main Vocalist, Lead Dancer, Sub Rapper, Center, Maknae And Younger than others. He learned break dance in 5th grade.\n\nHe holds a black taekwando belt.when jungkook  was younger he want to be a badminton player. also he received offers from eight different talent agencies  JYP, Big Hit Entertainment ,Cube , Entertainment Starship , FNC, Woolim but  He decides to join Big Hit Entertainment and becomes the the part of the group bangtan boys."
+    "description": "jungkook is known for his good vocals. Also, he holds a black taekwando belt. He wanted to be a badminton player when was still young."
   }
 ]

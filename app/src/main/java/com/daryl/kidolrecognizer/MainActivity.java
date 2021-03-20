@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chaquo.python.PyObject;
@@ -49,16 +50,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static String TAG = "MainActivity";
 
     private ExecutorService cameraExecutor;
-    private Python python;
     private MyData myData = MyData.getMyData();
 
-    private PreviewView viewFinder;
+    private PreviewView previewView;
     private AppCompatButton recognizerButton;
     private ChipGroup groupsChipGroup;
     private Chip btsChip, blackpinkChip, twiceChip, redVelvetChip;
 
+    private TextView stageNameTV;
+
     // Access to Module
     PyObject pyObject;
+    private Python python;
 
     // Check OpenCV
     static {
@@ -114,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // ===========================================================================================
     private void initViews() {
-        viewFinder = findViewById(R.id.viewFinder);
+        previewView = findViewById(R.id.viewFinder);
         recognizerButton = findViewById(R.id.recognizer_button);
 
         groupsChipGroup = findViewById(R.id.idol_group_chip_group);
@@ -122,6 +125,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         blackpinkChip = findViewById(R.id.blackpink_chip);
         twiceChip = findViewById(R.id.twice_chip);
         redVelvetChip = findViewById(R.id.red_velvet_chip);
+
+        stageNameTV = findViewById(R.id.stage_name_text_view);
     }
 
     // ===========================================================================================
@@ -150,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Preview preview = new Preview.Builder().build();
             CameraSelector cameraSelector = new CameraSelector.Builder()
                     .requireLensFacing(CameraSelector.LENS_FACING_BACK).build();
-            preview.setSurfaceProvider(viewFinder.createSurfaceProvider());
+            preview.setSurfaceProvider(previewView.createSurfaceProvider());
 
             // Use Case: Image Analyzer
             ImageAnalysis imageAnalyzer = new ImageAnalysis.Builder()
@@ -158,6 +163,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .build();
 
             imageAnalyzer.setAnalyzer(cameraExecutor, image -> {
+                Bitmap bitmapFrame = previewView.getBitmap();
+
+                if (pyObject != null) {
+                    PyObject face_detect_fr = pyObject.callAttr("detect_face_fr", encodeBitmapImage(bitmapFrame));
+                    setStageNameTV(face_detect_fr.toString());
+                    Log.e(TAG, face_detect_fr.toString());
+                }
+
 //                Log.d(TAG, "Image Info: " + image.getImageInfo());
 
                 // Set the Bitmap to the Current Frame
@@ -236,14 +249,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // ===========================================================================================
     // Set the Text of View outside the main
-//    private void setDetectionsText(String value){
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                detectionsTextView.setText(value);
-//            }
-//        });
-//    }
+    private void setStageNameTV(String value){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                stageNameTV.setText(value);
+            }
+        });
+    }
 
     // ===========================================================================================
     private String encodeBitmapImage(Bitmap bitmap) {
@@ -260,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.recognizer_button:
                 Intent intent = new Intent(getApplicationContext(), MainActivity2.class);
                 // Set the Bitmap to the Current Frame & Navigate to Main Activity 2
-                Bitmap bitmapFrame = viewFinder.getBitmap();
+                Bitmap bitmapFrame = previewView.getBitmap();
                 if (bitmapFrame != null) {
                     myData.setBitmapFrame(bitmapFrame);
                     ArrayList<String> checkedGroupNames = checkChipIdsToGroupNames(groupsChipGroup.getCheckedChipIds());
