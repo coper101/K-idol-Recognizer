@@ -11,7 +11,6 @@ public class MyData {
     private static MyData myData = new MyData();
 
     Bitmap bitmapFrame;
-    List<Idol> idolList;
     ArrayList<String> checkedGroupNames;
 
     // Instantiation only allowed within this class
@@ -30,14 +29,6 @@ public class MyData {
         return bitmapFrame;
     }
 
-    public List<Idol> getIdolList() {
-        return idolList;
-    }
-
-    public void setIdolList(List<Idol> idolList) {
-        this.idolList = idolList;
-    }
-
     public ArrayList<String> getCheckedGroupNames() {
         return checkedGroupNames;
     }
@@ -46,14 +37,4 @@ public class MyData {
         this.checkedGroupNames = checkedGroupNames;
     }
 
-    public int getIdolIndex(String stageName) {
-        int index = -1;                              // not found
-        for (int i = 0; i < idolList.size(); i++) {
-            if (stageName.equalsIgnoreCase(idolList.get(i).getStageName())) {
-                index = i;
-                break;
-            }
-        }
-        return index;
-    }
 }

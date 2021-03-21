@@ -11,10 +11,7 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Base64;
@@ -26,20 +23,11 @@ import android.widget.Toast;
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import org.opencv.android.OpenCVLoader;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,22 +42,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private PreviewView previewView;
     private AppCompatButton recognizerButton;
-    private ChipGroup groupsChipGroup;
-    private Chip btsChip, blackpinkChip, twiceChip, redVelvetChip;
 
-    private TextView stageNameTV;
+    private TextView
+            stageNameTV, realNameTV, roleTV, descTV,
+            heightTV, weightTV, bloodTypeTV;
 
     // Access to Module
     PyObject pyObject;
     private Python python;
-
-    // Check OpenCV
-    static {
-        if (OpenCVLoader.initDebug())
-            Log.d(TAG, "OpenCV installed successfully");
-        else
-            Log.d(TAG, "OpenCV not installed");
-    }
 
     // Permissions
     private final int REQUEST_CODE_PERMISSIONS = 101;
@@ -103,14 +83,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         pyObject = python.getModule("myScript");
 
         // Button is Clicked
-        recognizerButton.setOnClickListener(this);
+        recognizerButton.setOnClickListener(this);;
 
-        // Chip is Clicked
-        btsChip.setOnClickListener(this); blackpinkChip.setOnClickListener(this);
-        twiceChip.setOnClickListener(this); redVelvetChip.setOnClickListener(this);
-
-        // Retrieve Idols & Set in My Data
-        retrieveIdols();
 
     } // <--- end of onCreate --->
 
@@ -120,13 +94,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         previewView = findViewById(R.id.viewFinder);
         recognizerButton = findViewById(R.id.recognizer_button);
 
-        groupsChipGroup = findViewById(R.id.idol_group_chip_group);
-        btsChip = findViewById(R.id.bts_chip);
-        blackpinkChip = findViewById(R.id.blackpink_chip);
-        twiceChip = findViewById(R.id.twice_chip);
-        redVelvetChip = findViewById(R.id.red_velvet_chip);
-
         stageNameTV = findViewById(R.id.stage_name_text_view);
+        realNameTV = findViewById(R.id.real_name_text_view);
+        roleTV = findViewById(R.id.role_text_view);
+        descTV = findViewById(R.id.description_text_view);
+        heightTV = findViewById(R.id.height_text_view);
+        weightTV = findViewById(R.id.weight_text_view);
+        bloodTypeTV = findViewById(R.id.blood_type_text_view);
     }
 
     // ===========================================================================================
@@ -163,29 +137,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .build();
 
             imageAnalyzer.setAnalyzer(cameraExecutor, image -> {
+
                 Bitmap bitmapFrame = previewView.getBitmap();
+                String encodeBitmap = encodeBitmapImage(bitmapFrame);
 
-                if (pyObject != null) {
-                    PyObject face_detect_fr = pyObject.callAttr("detect_face_fr", encodeBitmapImage(bitmapFrame));
-                    setStageNameTV(face_detect_fr.toString());
-                    Log.e(TAG, face_detect_fr.toString());
+                if (pyObject != null && encodeBitmap != null) {
+
+                    // Recognize Idol (Average Time to Recognize: 1 sec)
+                    long start = System.currentTimeMillis();
+                    PyObject stageName = pyObject.callAttr("detect_face_fr", encodeBitmap);
+                    long end = System.currentTimeMillis();
+                    Log.e(TAG, "Time Taken: " + (end-start));
+
+                    List<PyObject> stageNames = stageName.asList();
+                    for (PyObject name: stageNames) {
+                        // Show Idol's Stage Name
+                        String nameStr = name.toString();
+                        setViewValue(stageNameTV, nameStr);
+                        Log.e(TAG, nameStr);
+                        // Show Idol's Profile
+                        PyObject profile = pyObject.callAttr("get_idol_profile", nameStr);
+                        Map<PyObject, PyObject> profileValues = profile.asMap();
+                        if (!profileValues.isEmpty()) {
+                            setViewValue(realNameTV, profileValues.get("Real Name (Korean)").toString());
+                        }
+                        Log.e(TAG, profile.toString());
+
+                    }
+
                 }
-
-//                Log.d(TAG, "Image Info: " + image.getImageInfo());
-
-                // Set the Bitmap to the Current Frame
-//                Bitmap bitmapFrame = viewFinder.getBitmap();
-//
-//                if (bitmapFrame == null)
-//                    return;
-//
-//                myData.setBitmapFrame(bitmapFrame);
-
-                // Show Recognized Face
-//                if (pyObject != null) {
-//                    PyObject detectFacesObj = pyObject.callAttr("recognize_face", encodeBitmapImage(bitmapFrame));
-//                    setDetectionsText(detectFacesObj.toString());
-//                }
 
                 image.close();
             });
@@ -249,11 +229,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // ===========================================================================================
     // Set the Text of View outside the main
-    private void setStageNameTV(String value){
+    private void setViewValue(View view, String value){
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                stageNameTV.setText(value);
+                switch (view.getId()) {
+                    case R.id.stage_name_text_view:
+                        stageNameTV.setText(value);
+                        break;
+                    case R.id.real_name_text_view:
+                        realNameTV.setText(value);
+                        break;
+                    case R.id.role_text_view:
+                        roleTV.setText(value);
+                        break;
+                    case R.id.description_text_view:
+                        descTV.setText(value);
+                        break;
+                    case R.id.height_text_view:
+                        heightTV.setText(value);
+                        break;
+                    case R.id.weight_text_view:
+                        weightTV.setText(value);
+                        break;
+                    case R.id.blood_type_text_view:
+                        bloodTypeTV.setText(value);
+                        break;
+                }
             }
         });
     }
@@ -271,88 +273,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.recognizer_button:
-                Intent intent = new Intent(getApplicationContext(), MainActivity2.class);
-                // Set the Bitmap to the Current Frame & Navigate to Main Activity 2
-                Bitmap bitmapFrame = previewView.getBitmap();
-                if (bitmapFrame != null) {
-                    myData.setBitmapFrame(bitmapFrame);
-                    ArrayList<String> checkedGroupNames = checkChipIdsToGroupNames(groupsChipGroup.getCheckedChipIds());
-                    myData.setCheckedGroupNames(checkedGroupNames);
-                    Log.e(TAG, myData.checkedGroupNames.toString());
-                    startActivity(intent);
-                }
                 break;
-            case R.id.bts_chip:
-                Toast.makeText(getApplicationContext(), "BTS", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.blackpink_chip:
-                Toast.makeText(getApplicationContext(), "BP", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.twice_chip:
-                Toast.makeText(getApplicationContext(), "TWICE", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.red_velvet_chip:
-                Toast.makeText(getApplicationContext(), "RV", Toast.LENGTH_SHORT).show();
-                break;
-            default:
-                Toast.makeText(getApplicationContext(), "onClick Invoked", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    // ===========================================================================================
-    private void retrieveIdols() {
-        String jsonString = jsonToString(getApplicationContext(), "idols.json");
-        List<Idol> idols = idolList(jsonString);
-        myData.setIdolList(idols);
-        for (Idol idol: myData.getIdolList()) {
-            Log.e(TAG, idol.toString());
-        }
-    }
-
-    // ===========================================================================================
-    private String jsonToString(Context context, String fileName) {
-        AssetManager assetManager = context.getAssets();
-        String jsonString = null;
-        try {
-            InputStream is = assetManager.open(fileName);
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-            jsonString = new String(buffer, "UTF-8");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return jsonString;
-    }
-
-    // ===========================================================================================
-    private List<Idol> idolList(String jsonString) {
-        Gson gson = new Gson();
-        Type listIdolsType = new TypeToken<List<Idol>>(){}.getType();
-        return gson.fromJson(jsonString, listIdolsType);
-    }
-
-    // ===========================================================================================
-    private ArrayList<String> checkChipIdsToGroupNames(List<Integer> checkChipIds) {
-        ArrayList<String> checkedGroupNames = new ArrayList<>();
-        for (int checkChipId: checkChipIds) {
-            switch (checkChipId) {
-                case R.id.bts_chip:
-                    checkedGroupNames.add("Bts");
-                    break;
-                case R.id.blackpink_chip:
-                    checkedGroupNames.add("Blackpink");
-                    break;
-                case R.id.twice_chip:
-                    checkedGroupNames.add("Twice");
-                    break;
-                case R.id.red_velvet_chip:
-                    checkedGroupNames.add("Red Velvet");
-                    break;
-            }
-        }
-        return checkedGroupNames;
     }
 
 

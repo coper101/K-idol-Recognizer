@@ -39,7 +39,6 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
     private PyObject pyObject;
     private Python python;
 
-    // ===========================================================================================
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,19 +54,12 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
         python = Python.getInstance();
         pyObject = python.getModule("myScript");
 
-        // Display Idol Captured
-        showIdolCaptured();
-
-        // Display Name and Description of the Idol Detected
-        showIdolDesc();
-
         // Back Button is Clicked
         topAppBar.setNavigationOnClickListener(this);
 
     } // <--- end of onCreate --->
 
 
-    // ===========================================================================================
     private String encodeBitmapImage(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
@@ -75,7 +67,6 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
         return android.util.Base64.encodeToString(imageBytes, Base64.DEFAULT);
     }
 
-    // ===========================================================================================
     private void initViews() {
         topAppBar = findViewById(R.id.top_app_bar);
         faceImageView = findViewById(R.id.face_image_view);
@@ -91,7 +82,6 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
         addAsBiasFAB = findViewById(R.id.add_as_bias_fab);
     }
 
-    // ===========================================================================================
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -99,50 +89,6 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
                 finish();
                 break;
         }
-    }
-
-    // ===========================================================================================
-    private void showIdolCaptured() {
-        // Set Image View to Bitmap Image Set
-        bitmapImage = myData.getBitmapFrame();
-        if (bitmapImage != null) {
-            faceImageView.setImageBitmap(bitmapImage);
-        }
-    }
-
-    // ===========================================================================================
-    private void showIdolDesc() {
-        if (pyObject != null) {
-            // Pass the Group/s Selected (Filter)
-//            PyObject faces_recognized = pyObject.callAttr("recognize_face", encodeBitmapImage(bitmapImage));
-//            if (!faces_recognized.toString().equals("{}")) {
-//                Log.e(TAG, faces_recognized.toString());
-//                String idolName = faces_recognized.asMap().get(0).asList().get(0).toString();
-//                int idolIndex = myData.getIdolIndex(idolName);
-//                if (idolIndex != -1) {
-//                    Idol idol = myData.idolList.get(idolIndex);
-//                    topAppBar.setTitle(idol.getGroupName());
-//                    stageNameTV.setText(idol.getStageName());
-//                    realNameTV.setText(idol.getRealName());
-//                    roleTV.setText(idol.getRole());
-//                    descTV.setText(idol.getDescription());
-//                    heightTV.setText(idol.getHeight());
-//                    weightTV.setText(idol.getWeight());
-//                    bloodTypeTV.setText(idol.getBloodType());
-//                }
-//            } else {
-//                topAppBar.setTitle("");
-//                stageNameTV.setText("No Match"); realNameTV.setText("");
-//                roleTV.setText(""); descTV.setText("");
-//                heightTV.setText(""); weightTV.setText(""); bloodTypeTV.setText("");
-//                addAsBiasFAB.hide();
-//            }
-
-            PyObject face_detect_fr = pyObject.callAttr("detect_face_fr", encodeBitmapImage(bitmapImage));
-            Log.e(TAG, face_detect_fr.toString());
-        }
-
-
     }
 
     private static class Behavior extends BottomSheetBehavior.BottomSheetCallback {
