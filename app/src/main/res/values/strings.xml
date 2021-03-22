@@ -1,3 +1,30 @@
 <resources>
     <string name="app_name">kIdolRecognizer</string>
+
+    <string name="stage_name">Stage Name</string>
+    <string name="real_name">Real Name</string>
+
+    <string name="group">Group</string>
+    <string name="group_name">Group Name</string>
+    <string name="entertainment">Entertainment</string>
+    <string name="entertainment_name">Entertainment Name</string>
+
+    <string name="height">Height</string>
+    <string name="weight">Weight</string>
+    <string name="blood_type">Blood Type</string>
+
+    <string name="roles">Roles</string>
+    <string name="stats">Stats</string>
+    <string name="spoken_languages">Spoken Languages</string>
+
+    <string name="role_name">Role Name</string>
+
+    <string name="nationality">Nationality</string>
+    <string name="nationality_name">Nationality Name</string>
+
+    <string name="sns">SNS</string>
+    <string name="idol_ig">Idol IG</string>
+    <string name="group_ig">Group IG</string>
+    <string name="age">Age</string>
+
 </resources>

@@ -13,4 +13,52 @@
         <item name="android:statusBarColor" tools:targetApi="l">@android:color/transparent</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="Title" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="android:textFontWeight" tools:targetApi="p">400</item>
+        <item name="android:textColor">@color/white_300</item>
+    </style>
+
+    <style name="Title2" parent="Title">
+        <item name="android:textFontWeight" tools:targetApi="p">300</item>
+        <item name="android:textSize">20dp</item>
+    </style>
+
+    <style name="Title3" parent="Title">
+        <item name="android:textSize">18dp</item>
+        <item name="android:textColor">@color/white_300</item>
+    </style>
+
+    <style name="Header" parent="Title">
+        <item name="android:textSize">15dp</item>
+        <item name="android:textColor">@color/white_500</item>
+    </style>
+
+    <style name="Card" parent="">
+        <item name="cardBackgroundColor">@color/space_gray</item>
+        <item name="strokeColor">@color/white_600</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="cardCornerRadius">8dp</item>
+    </style>
+
+    <style name="CardEmpty" parent="Card">
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <style name="CardText" parent="TextAppearance.MaterialComponents.Subtitle2">
+        <item name="android:textColor">@color/white_300</item>
+        <item name="android:textFontWeight" tools:targetApi="p">400</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="CardImage" parent="">
+        <item name="cardCornerRadius">8dp</item>
+        <item name="cardBackgroundColor">@color/space_gray</item>
+        <item name="strokeColor">@color/white_600</item>
+        <item name="strokeWidth">0.5dp</item>
+    </style>
+
+
+
 </resources>

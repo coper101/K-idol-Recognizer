@@ -3,6 +3,7 @@ package com.daryl.kidolrecognizer;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
@@ -10,6 +11,9 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -17,15 +21,23 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
+import com.google.android.material.card.MaterialCardView;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.ByteArrayOutputStream;
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -35,17 +47,32 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private static String TAG = "MainActivity";
+    private static String TAG = MainActivity.class.getSimpleName();
 
+    // CameraX
     private ExecutorService cameraExecutor;
+    private PreviewView previewView;
+
+    // Data
     private MyData myData = MyData.getMyData();
 
-    private PreviewView previewView;
-    private AppCompatButton recognizerButton;
+    // Recycler View
+    private ArrayList<Role> roles = new ArrayList<>();
+    private RolesListAdapterWithRecyclerView rolesListAdapterRV;
+    private RecyclerView rolesRV;
 
+    // Views
     private TextView
-            stageNameTV, realNameTV, roleTV, descTV,
-            heightTV, weightTV, bloodTypeTV;
+            stageNameTV, realNameTV,
+            groupNameTV, entTV,
+            heightTV, weightTV, bloodTypeTV,
+            nationalityTV, ageTV,
+            idolIgTV, groupIgTV;
+    private ImageView faceIV;
+    private AppCompatImageButton recognizerBtn;
+
+    // Trigger Recognizer
+    private boolean isRecognizerActivated;
 
     // Access to Module
     PyObject pyObject;
@@ -83,8 +110,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         pyObject = python.getModule("myScript");
 
         // Button is Clicked
-        recognizerButton.setOnClickListener(this);;
+        recognizerBtn.setOnClickListener(this);
 
+        // Init List Adapter with Recyler View
+        initListAdapter();
 
     } // <--- end of onCreate --->
 
@@ -92,15 +121,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // ===========================================================================================
     private void initViews() {
         previewView = findViewById(R.id.viewFinder);
-        recognizerButton = findViewById(R.id.recognizer_button);
 
         stageNameTV = findViewById(R.id.stage_name_text_view);
         realNameTV = findViewById(R.id.real_name_text_view);
-        roleTV = findViewById(R.id.role_text_view);
-        descTV = findViewById(R.id.description_text_view);
+
+        groupNameTV = findViewById(R.id.group_name_text_view);
+        entTV = findViewById(R.id.entertainment_text_view);
+
+        ageTV = findViewById(R.id.age_text_view);
         heightTV = findViewById(R.id.height_text_view);
         weightTV = findViewById(R.id.weight_text_view);
         bloodTypeTV = findViewById(R.id.blood_type_text_view);
+
+        faceIV = findViewById(R.id.face_image_view);
+
+        rolesRV = findViewById(R.id.roles_recycler_view);
+
+        nationalityTV = findViewById(R.id.nationality_text_view);
+
+        idolIgTV = findViewById(R.id.idol_ig_text_view);
+        groupIgTV = findViewById(R.id.group_ig_text_view);
+
+        recognizerBtn = findViewById(R.id.recognizer_button);
     }
 
     // ===========================================================================================
@@ -141,27 +183,73 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Bitmap bitmapFrame = previewView.getBitmap();
                 String encodeBitmap = encodeBitmapImage(bitmapFrame);
 
-                if (pyObject != null && encodeBitmap != null) {
+                if (pyObject != null && encodeBitmap != null && isRecognizerActivated) {
 
                     // Recognize Idol (Average Time to Recognize: 1 sec)
                     long start = System.currentTimeMillis();
-                    PyObject stageName = pyObject.callAttr("detect_face_fr", encodeBitmap);
+                    PyObject stageNameAndBbox = pyObject.callAttr("detect_face_fr", encodeBitmap);
                     long end = System.currentTimeMillis();
+                    isRecognizerActivated = false;
                     Log.e(TAG, "Time Taken: " + (end-start));
 
-                    List<PyObject> stageNames = stageName.asList();
-                    for (PyObject name: stageNames) {
+                    List<PyObject> stageNameAndBboxList = stageNameAndBbox.asList();
+                    Log.e(TAG, stageNameAndBboxList.toString());
+
+                    for (PyObject stageNameAndBboxE: stageNameAndBboxList) {
+
                         // Show Idol's Stage Name
-                        String nameStr = name.toString();
-                        setViewValue(stageNameTV, nameStr);
-                        Log.e(TAG, nameStr);
+                        String stageName = stageNameAndBboxE.asList().get(0).toString();
+                        setViewValue(stageNameTV, stageName);
+                        Log.e(TAG, stageName);
+
+                        // Show Cropped Face
+                        int x1 = stageNameAndBboxE.asList().get(1).toInt();
+                        int x2 = stageNameAndBboxE.asList().get(2).toInt();
+                        int y1 = stageNameAndBboxE.asList().get(3).toInt();
+                        int y2 = stageNameAndBboxE.asList().get(4).toInt();
+                        Bitmap croppedFace = Bitmap.createBitmap(bitmapFrame, x1, y1, x2-x1, y2-y1);
+                        Log.e(TAG, "Face Axis: " + x1 + " " + x2 + " " + y1 + " " + y2);
+                        setImageView(croppedFace);
+
                         // Show Idol's Profile
-                        PyObject profile = pyObject.callAttr("get_idol_profile", nameStr);
-                        Map<PyObject, PyObject> profileValues = profile.asMap();
-                        if (!profileValues.isEmpty()) {
-                            setViewValue(realNameTV, profileValues.get("Real Name (Korean)").toString());
-                        }
+                        PyObject profile = pyObject.callAttr("get_idol_profile", stageName);
                         Log.e(TAG, profile.toString());
+                        Map<PyObject, PyObject> profileValues = profile.asMap();
+
+                        if (!profileValues.isEmpty()) {
+
+                            // Real Name
+                            setViewValue(realNameTV, profileValues.get("Real Name (Korean)").toString());
+
+                            // Group Name, Entertainment
+                            setViewValue(groupNameTV, profileValues.get("Group Name").toString());
+                            setViewValue(entTV, profileValues.get("Entertainment").toString());
+
+                            // Roles
+                            String rolesString = profileValues.get("Roles").toString();
+                            String[] rolesSeparated =  rolesString.split(", ");
+                            roles.clear();
+                            for (String role: rolesSeparated) {
+                                roles.add(new Role(role));
+                            }
+                            Log.e(TAG, Arrays.toString(rolesSeparated));
+                            updateRoleRV();
+
+                            // Stats
+                            String birthDateStr = profileValues.get("Birth Date").toString();
+                            Log.e(TAG, birthDateStr);
+                            if (!birthDateStr.equalsIgnoreCase("nan")) {
+                                int age = calculateAge(birthDateStr);
+                                setViewValue(ageTV, age + "");
+                            }
+                            setViewValue(heightTV, profileValues.get("Height").toString() + " cm");
+                            setViewValue(weightTV, profileValues.get("Weight").toString() + " kg");
+                            setViewValue(bloodTypeTV, profileValues.get("Blood Type").toString());
+
+                            // Nationality
+                            setViewValue(nationalityTV, profileValues.get("Nationality").toString());
+
+                        }
 
                     }
 
@@ -228,6 +316,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     // ===========================================================================================
+    // Reference: Stackoverflow
     // Set the Text of View outside the main
     private void setViewValue(View view, String value){
         runOnUiThread(new Runnable() {
@@ -240,11 +329,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case R.id.real_name_text_view:
                         realNameTV.setText(value);
                         break;
-                    case R.id.role_text_view:
-                        roleTV.setText(value);
+                    case R.id.group_name_text_view:
+                        groupNameTV.setText(value);
                         break;
-                    case R.id.description_text_view:
-                        descTV.setText(value);
+                    case R.id.entertainment_text_view:
+                        entTV.setText(value);
+                        break;
+                    case R.id.age_text_view:
+                        ageTV.setText(value);
                         break;
                     case R.id.height_text_view:
                         heightTV.setText(value);
@@ -255,7 +347,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case R.id.blood_type_text_view:
                         bloodTypeTV.setText(value);
                         break;
+                    case R.id.nationality_text_view:
+                        nationalityTV.setText(value);
+                        break;
+                    case R.id.idol_ig_text_view:
+                        idolIgTV.setText(value);
+                        break;
+                    case R.id.group_ig_text_view:
+                        groupIgTV.setText(value);
+                        break;
+
+
                 }
+            }
+        });
+    }
+
+    private void setImageView(Bitmap bitmap){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                faceIV.setImageBitmap(bitmap);
+            }
+        });
+    }
+
+    private void updateRoleRV(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                rolesListAdapterRV.notifyDataSetChanged();
             }
         });
     }
@@ -273,9 +394,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.recognizer_button:
+                isRecognizerActivated = true;
                 break;
         }
     }
 
+    // ===========================================================================================
+    private void initListAdapter() {
+        rolesListAdapterRV = new RolesListAdapterWithRecyclerView(roles, this, R.layout.role_item);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 1, RecyclerView.HORIZONTAL, false);
+        rolesRV.setLayoutManager(layoutManager);
+        rolesRV.setAdapter(rolesListAdapterRV);
 
-} // <---  end of MainActivity ! --->
+        roles.add(new Role("Role 1"));
+        roles.add(new Role("Role 2"));
+        roles.add(new Role("Role 3"));
+        rolesListAdapterRV.notifyDataSetChanged();
+    }
+
+    // ===========================================================================================
+    // Reference: https://www.candidjava.com/tutorial/java-program-to-calculate-age-from-date-of-birth/
+    private int calculateAge(String birthDateStr) {
+        if (!birthDateStr.isEmpty()) {
+            // dd/mm/yyyy
+            String[] dates =  birthDateStr.split("/");
+
+            int year = Integer.valueOf(dates[2]);
+            int monthOfYear = Integer.valueOf(dates[1]);
+            int dayOfMonth = Integer.valueOf(dates[0]);
+
+            LocalDate birthDate = LocalDate.of(year, monthOfYear, dayOfMonth);
+            LocalDate curDate = LocalDate.now();
+
+            return Period.between(birthDate, curDate).getYears();
+        }
+        return 0;
+    }
+
+
+
+
+} // <---  end of MainActivity --->

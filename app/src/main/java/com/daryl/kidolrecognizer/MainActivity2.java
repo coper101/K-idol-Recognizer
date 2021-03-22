@@ -31,7 +31,7 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
     // Views
     private MaterialToolbar topAppBar;
     private TextView
-            stageNameTV, realNameTV, roleTV, descTV,
+            stageNameTV, realNameTV,
             heightTV, weightTV, bloodTypeTV;
     private FloatingActionButton addAsBiasFAB;
 
@@ -73,8 +73,6 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
 
         stageNameTV = findViewById(R.id.stage_name_text_view);
         realNameTV = findViewById(R.id.real_name_text_view);
-        roleTV = findViewById(R.id.role_text_view);
-        descTV = findViewById(R.id.description_text_view);
         heightTV = findViewById(R.id.height_text_view);
         weightTV = findViewById(R.id.weight_text_view);
         bloodTypeTV = findViewById(R.id.blood_type_text_view);
