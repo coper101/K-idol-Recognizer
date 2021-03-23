@@ -10,8 +10,9 @@ public class MyData {
 
     private static MyData myData = new MyData();
 
-    Bitmap bitmapFrame;
-    ArrayList<String> checkedGroupNames;
+    private Bitmap recognizedIdolBitmapFull;
+    private Bitmap recognizedIdolBitmapCrop;
+    private String stageName;
 
     // Instantiation only allowed within this class
     private MyData() {}
@@ -21,20 +22,27 @@ public class MyData {
         return myData;
     }
 
-    public void setBitmapFrame(Bitmap bitmapFrame) {
-        this.bitmapFrame = bitmapFrame;
+    public Bitmap getRecognizedIdolBitmapFull() {
+        return recognizedIdolBitmapFull;
     }
 
-    public Bitmap getBitmapFrame() {
-        return bitmapFrame;
+    public void setRecognizedIdolBitmapFull(Bitmap recognizedIdolBitmapFull) {
+        this.recognizedIdolBitmapFull = recognizedIdolBitmapFull;
     }
 
-    public ArrayList<String> getCheckedGroupNames() {
-        return checkedGroupNames;
+    public Bitmap getRecognizedIdolBitmapCrop() {
+        return recognizedIdolBitmapCrop;
     }
 
-    public void setCheckedGroupNames(ArrayList<String> checkedGroupNames) {
-        this.checkedGroupNames = checkedGroupNames;
+    public void setRecognizedIdolBitmapCrop(Bitmap recognizedIdolBitmapCrop) {
+        this.recognizedIdolBitmapCrop = recognizedIdolBitmapCrop;
     }
 
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
 }

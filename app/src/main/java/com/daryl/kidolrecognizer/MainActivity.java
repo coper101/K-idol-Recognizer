@@ -2,17 +2,16 @@ package com.daryl.kidolrecognizer;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.pm.PackageManager;
@@ -21,6 +20,7 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -29,7 +29,13 @@ import android.widget.Toast;
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
+import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.ByteArrayOutputStream;
@@ -37,7 +43,6 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -70,6 +75,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             idolIgTV, groupIgTV;
     private ImageView faceIV;
     private AppCompatImageButton recognizerBtn;
+    private LinearProgressIndicator recognizerProgInd;
+    private CoordinatorLayout mainView;
+    private Button draggableHintBtn;
+
+    // Bottom App Bar View
+    private BottomAppBar bottomAppBar;
+    private MaterialButton saveBtn, favoriteBtn;
+
+    // Persistent Bottom Sheet
+    private LinearLayout perBottomSheet;
+    private BottomSheetBehavior bottomSheetBehavior;
+    private MyBottomBehavior myBottomBehavior = new MyBottomBehavior();
+
+    // Bottom Sheet Dialog
+    private BottomSheetDialog bottomSheetDialog;
+    ImageView idolCroppedIV, idolFullIV;
+    MaterialCardView idolCroppedCard, idolFullCard;
 
     // Trigger Recognizer
     private boolean isRecognizerActivated;
@@ -111,38 +133,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Button is Clicked
         recognizerBtn.setOnClickListener(this);
+        saveBtn.setOnClickListener(this);
+        favoriteBtn.setOnClickListener(this);
 
         // Init List Adapter with Recyler View
         initListAdapter();
+
+        // Hide Progress Indicator
+        recognizerProgInd.hide();
+
+        // Bottom Bar
+        setSupportActionBar(bottomAppBar);
+        getSupportActionBar().hide();
+
+        // Handle Sheet Behavior State & Slide
+        bottomSheetBehavior = BottomSheetBehavior.from(perBottomSheet);
+        bottomSheetBehavior.addBottomSheetCallback(myBottomBehavior);
+        bottomAppBar.performHide();
+
+        // Initialize Bottom Sheet Dialog
+        initModalBottomSheet();
+
 
     } // <--- end of onCreate --->
 
 
     // ===========================================================================================
     private void initViews() {
+        // CameraX
         previewView = findViewById(R.id.viewFinder);
-
+        // Recognizer
+        recognizerBtn = findViewById(R.id.recognizer_button);
+        recognizerProgInd = findViewById(R.id.recognizer_progress_indicator);
+        // Persistent Bottom Sheet
+        perBottomSheet = findViewById(R.id.persistent_bottom_sheet);
+        draggableHintBtn = findViewById(R.id.draggable_hint_button);
+        // Recognizer Message
+        mainView = findViewById(R.id.main_view);
+        // Description
         stageNameTV = findViewById(R.id.stage_name_text_view);
         realNameTV = findViewById(R.id.real_name_text_view);
-
+        faceIV = findViewById(R.id.face_image_view);
         groupNameTV = findViewById(R.id.group_name_text_view);
         entTV = findViewById(R.id.entertainment_text_view);
-
+        rolesRV = findViewById(R.id.roles_recycler_view);
         ageTV = findViewById(R.id.age_text_view);
         heightTV = findViewById(R.id.height_text_view);
         weightTV = findViewById(R.id.weight_text_view);
         bloodTypeTV = findViewById(R.id.blood_type_text_view);
-
-        faceIV = findViewById(R.id.face_image_view);
-
-        rolesRV = findViewById(R.id.roles_recycler_view);
-
         nationalityTV = findViewById(R.id.nationality_text_view);
-
         idolIgTV = findViewById(R.id.idol_ig_text_view);
         groupIgTV = findViewById(R.id.group_ig_text_view);
+        // Bottom Bar for Buttons
+        bottomAppBar = findViewById(R.id.bottom_app_bar);
+        saveBtn = findViewById(R.id.save_button);
+        favoriteBtn = findViewById(R.id.favorite_button);
 
-        recognizerBtn = findViewById(R.id.recognizer_button);
     }
 
     // ===========================================================================================
@@ -189,11 +235,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     long start = System.currentTimeMillis();
                     PyObject stageNameAndBbox = pyObject.callAttr("detect_face_fr", encodeBitmap);
                     long end = System.currentTimeMillis();
+                    showOrHideProgInd(false);
                     isRecognizerActivated = false;
                     Log.e(TAG, "Time Taken: " + (end-start));
 
+                    // Faces To Java List
                     List<PyObject> stageNameAndBboxList = stageNameAndBbox.asList();
                     Log.e(TAG, stageNameAndBboxList.toString());
+
+                    // Check for Empty List of Faces
+                    if (stageNameAndBboxList.isEmpty()) {
+                        showRecognizerMessage();
+                        Log.e(TAG, "No Faces Detected");
+                    }
 
                     for (PyObject stageNameAndBboxE: stageNameAndBboxList) {
 
@@ -210,6 +264,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Bitmap croppedFace = Bitmap.createBitmap(bitmapFrame, x1, y1, x2-x1, y2-y1);
                         Log.e(TAG, "Face Axis: " + x1 + " " + x2 + " " + y1 + " " + y2);
                         setImageView(croppedFace);
+
+                        // Store Bitmap Frame Temporarily
+                        myData.setRecognizedIdolBitmapCrop(croppedFace);
+                        myData.setRecognizedIdolBitmapFull(bitmapFrame);
+                        Log.e(TAG, "Full Bitmap: " + myData.getRecognizedIdolBitmapCrop());
+                        Log.e(TAG, "Cropped Bitmap: " + myData.getRecognizedIdolBitmapCrop());
 
                         // Show Idol's Profile
                         PyObject profile = pyObject.callAttr("get_idol_profile", stageName);
@@ -249,11 +309,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             // Nationality
                             setViewValue(nationalityTV, profileValues.get("Nationality").toString());
 
-                        }
+                        } // <-- end of checking for empty profile values -->
 
-                    }
+                    } // <-- end of iterating faces -->
 
-                }
+                } // <-- end of checking for null -->
 
                 image.close();
             });
@@ -381,6 +441,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
+    private void showOrHideProgInd(boolean show){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (show) {
+                    recognizerProgInd.show();
+                } else {
+                    recognizerProgInd.hide();
+                }
+            }
+        });
+    }
+
+    private void showRecognizerMessage(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Snackbar.make(mainView, R.string.message, Snackbar.LENGTH_SHORT)
+                        .show();
+            }
+        });
+    }
+
     // ===========================================================================================
     private String encodeBitmapImage(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -395,6 +478,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.recognizer_button:
                 isRecognizerActivated = true;
+                recognizerProgInd.show();
+                break;
+            case R.id.save_button:
+                // Reference: https://www.section.io/engineering-education/bottom-sheet-dialogs-using-android-studio/
+                bottomSheetDialog.show();
+                if (myData.getRecognizedIdolBitmapCrop() != null && myData.getRecognizedIdolBitmapFull() != null) {
+                    Log.e(TAG, "not null");
+                    idolCroppedIV.setImageBitmap(myData.getRecognizedIdolBitmapCrop());
+                    idolFullIV.setImageBitmap(myData.getRecognizedIdolBitmapFull());
+                }
+                break;
+            case R.id.favorite_button:
                 break;
         }
     }
@@ -431,7 +526,68 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return 0;
     }
 
+    // ===========================================================================================
+    // Persistent Bottom Sheet Behavior
+    private class MyBottomBehavior extends BottomSheetBehavior.BottomSheetCallback {
+        private float lastSlideOffSet = 0;
+        @Override
+        public void onStateChanged(@NonNull View bottomSheet, int newState) {
+            switch (newState) {
+                case BottomSheetBehavior.STATE_EXPANDED:
+                    getSupportActionBar().show();
+                    break;
+                case BottomSheetBehavior.STATE_COLLAPSED:
+                    getSupportActionBar().hide();
+                    break;
+            }
+        }
 
+        @Override
+        public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+            // Log.e(TAG, "Current SlideOffSet: " + slideOffset);
+            // Log.e(TAG, "Last SlideOffSet: " + lastSlideOffSet);
+            // Swipping up
+            if (slideOffset > lastSlideOffSet) {
+                if (slideOffset > 0.99f) {
+                    getWindow().setStatusBarColor(getColor(R.color.space_gray));
+                    perBottomSheet.setBackground(getDrawable(R.drawable.pers_bottom_sheet_bg_expanded));
+                    draggableHintBtn.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.space_gray));
+                }
+                if (slideOffset > 0.5) {
+                    getSupportActionBar().show();
+                }
+
+                if (slideOffset > 0.3) {
+                    recognizerBtn.setVisibility(View.GONE);
+                }
+            }
+            // Swipping Down
+            else if (slideOffset < lastSlideOffSet) {
+                if (slideOffset < 0.99f) {
+                    getWindow().setStatusBarColor(getColor(R.color.transparent));
+                    perBottomSheet.setBackground(getDrawable(R.drawable.pers_bottom_sheet_bg));
+                    draggableHintBtn.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.white_400_A80));
+                }
+                if (slideOffset < 0.5) {
+                    getSupportActionBar().hide();
+                }
+                if (slideOffset < 0.6) {
+                    recognizerBtn.setVisibility(View.VISIBLE);
+                }
+            }
+            lastSlideOffSet = slideOffset;
+        }
+    }
+
+    // ===========================================================================================
+    private void initModalBottomSheet() {
+        bottomSheetDialog = new BottomSheetDialog(this);
+        bottomSheetDialog.setContentView(R.layout.modal_bottom_sheet);
+        idolCroppedIV = bottomSheetDialog.findViewById(R.id.idol_cropped_image_view);
+        idolFullIV = bottomSheetDialog.findViewById(R.id.idol_full_image_view);
+        idolCroppedCard = bottomSheetDialog.findViewById(R.id.idol_cropped_card);
+        idolFullCard = bottomSheetDialog.findViewById(R.id.idol_full_card);
+    }
 
 
 } // <---  end of MainActivity --->

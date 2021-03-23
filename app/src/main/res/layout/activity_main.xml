@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -37,9 +38,46 @@
 
     </LinearLayout>
 
-
-
     <!-- Persistent Bottom Sheet -->
     <include layout="@layout/pers_bottom_sheet" />
+
+    <!-- Bottom Bar for Buttons Save & Favorite -->
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottom_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_gravity="bottom"
+        style="@style/BottomAppBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="12dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/favorite_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                style="@style/ButtonBottomBar"
+                android:text="@string/favorite"/>
+
+            <Button
+                android:id="@+id/save_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                style="@style/ButtonBottomBar"
+                android:text="@string/save"/>
+
+        </LinearLayout>
+
+    </com.google.android.material.bottomappbar.BottomAppBar>
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

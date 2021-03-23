@@ -9,15 +9,14 @@
     <string name="entertainment">Entertainment</string>
     <string name="entertainment_name">Entertainment Name</string>
 
+    <string name="roles">Roles</string>
+    <string name="role_name">Role Name</string>
+
+    <string name="stats">Stats</string>
+    <string name="age">Age</string>
     <string name="height">Height</string>
     <string name="weight">Weight</string>
     <string name="blood_type">Blood Type</string>
-
-    <string name="roles">Roles</string>
-    <string name="stats">Stats</string>
-    <string name="spoken_languages">Spoken Languages</string>
-
-    <string name="role_name">Role Name</string>
 
     <string name="nationality">Nationality</string>
     <string name="nationality_name">Nationality Name</string>
@@ -25,6 +24,16 @@
     <string name="sns">SNS</string>
     <string name="idol_ig">Idol IG</string>
     <string name="group_ig">Group IG</string>
-    <string name="age">Age</string>
+
+    <string name="message">No Faces Detected.</string>
+
+    <string name="save">Save Photo</string>
+    <string name="favorite">Favorite</string>
+    <string name="title_activity_main2">MainActivity2</string>
+    <!--
+    This string is used for square devices and overridden by hello_world in
+    values-round/strings.xml for round devices.
+    -->
+    <string name="hello_world">Hello Square World!</string>
 
 </resources>
