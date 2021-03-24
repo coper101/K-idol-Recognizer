@@ -12,7 +12,7 @@ public class MyData {
 
     private Bitmap recognizedIdolBitmapFull;
     private Bitmap recognizedIdolBitmapCrop;
-    private String stageName;
+    private Idol idol;
 
     // Instantiation only allowed within this class
     private MyData() {}
@@ -20,6 +20,10 @@ public class MyData {
     // Get the instance of this class
     public static MyData getMyData() {
         return myData;
+    }
+
+    public static void setMyData(MyData myData) {
+        MyData.myData = myData;
     }
 
     public Bitmap getRecognizedIdolBitmapFull() {
@@ -38,11 +42,11 @@ public class MyData {
         this.recognizedIdolBitmapCrop = recognizedIdolBitmapCrop;
     }
 
-    public String getStageName() {
-        return stageName;
+    public Idol getIdol() {
+        return idol;
     }
 
-    public void setStageName(String stageName) {
-        this.stageName = stageName;
+    public void setIdol(Idol idol) {
+        this.idol = idol;
     }
 }

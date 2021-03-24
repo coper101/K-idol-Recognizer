@@ -156,8 +156,7 @@
         android:id="@+id/roles_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="@dimen/card_height"
-        android:layout_marginTop="@dimen/margin_top_cards"
-        android:paddingStart="25dp"/>
+        android:layout_marginTop="@dimen/margin_top_cards"/>
 
     <!-- Stats -->
     <TextView
@@ -172,7 +171,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_top_cards"
-        android:paddingStart="@dimen/padding_left_right"
         android:scrollbars="none">
 
         <LinearLayout
@@ -185,6 +183,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/padding_left_right"
                 android:layout_marginEnd="15dp"
                 style="@style/Card">
                 <TextView
@@ -278,13 +277,13 @@
         android:layout_height="@dimen/card_height"
         android:orientation="horizontal"
         android:layout_marginTop="@dimen/margin_top_cards"
-        android:paddingStart="@dimen/padding_left_right"
         android:weightSum="3">
 
         <!-- Idol IG -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/padding_left_right"
             android:layout_marginEnd="15dp"
             android:layout_weight="1"
             style="@style/Card">

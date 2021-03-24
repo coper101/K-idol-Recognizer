@@ -51,27 +51,24 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="58dp"
             android:layout_marginEnd="15dp"
-            android:paddingTop="5dp"
-            android:paddingBottom="12dp"
-            android:weightSum="2">
+            android:weightSum="10">
 
-            <Button
+            <CheckBox
                 android:id="@+id/favorite_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="6dp"
+                android:layout_width="0dp"
                 android:layout_weight="1"
-                style="@style/ButtonBottomBar"
-                android:text="@string/favorite"/>
+                android:layout_height="wrap_content"
+                android:button="@drawable/fave_selector"
+                app:buttonTint="@color/white_500"/>
 
             <Button
                 android:id="@+id/save_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_height="58dp"
                 android:layout_marginStart="6dp"
-                android:layout_weight="1"
+                android:layout_weight="9"
                 style="@style/ButtonBottomBar"
                 android:text="@string/save"/>
 

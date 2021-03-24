@@ -34,6 +34,13 @@ public class RolesListAdapterWithRecyclerView extends RecyclerView.Adapter<Roles
     public void onBindViewHolder(@NonNull RolesListAdapterWithRecyclerView.RoleViewHolder holder, int position) {
         final Role role = roles.get(position);
         holder.roleTV.setText(role.getRoleName());
+        if (position == 0) {
+            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.itemView.getLayoutParams();
+            float density = context.getResources().getDisplayMetrics().density;
+            float px = 25 * density;
+            params.leftMargin = (int) px;
+            holder.itemView.setLayoutParams(params);
+        }
     }
 
     @Override

@@ -14,13 +14,23 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -37,8 +47,13 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.gson.GsonBuilder;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
@@ -48,9 +63,10 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.prefs.Preferences;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     private static String TAG = MainActivity.class.getSimpleName();
 
@@ -59,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private PreviewView previewView;
 
     // Data
-    private MyData myData = MyData.getMyData();
+    private MyData myData;
 
     // Recycler View
     private ArrayList<Role> roles = new ArrayList<>();
@@ -81,7 +97,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Bottom App Bar View
     private BottomAppBar bottomAppBar;
-    private MaterialButton saveBtn, favoriteBtn;
+    private MaterialButton saveBtn;
+    private CheckBox favoriteBtn;
 
     // Persistent Bottom Sheet
     private LinearLayout perBottomSheet;
@@ -92,9 +109,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private BottomSheetDialog bottomSheetDialog;
     ImageView idolCroppedIV, idolFullIV;
     MaterialCardView idolCroppedCard, idolFullCard;
-
-    // Trigger Recognizer
-    private boolean isRecognizerActivated;
 
     // Access to Module
     PyObject pyObject;
@@ -121,6 +135,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         cameraExecutor = Executors.newSingleThreadExecutor();
 
+        myData = MyData.getMyData();
+
         // Initialize Views
         initViews();
 
@@ -134,9 +150,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Button is Clicked
         recognizerBtn.setOnClickListener(this);
         saveBtn.setOnClickListener(this);
-        favoriteBtn.setOnClickListener(this);
+        favoriteBtn.setOnCheckedChangeListener(this);
 
-        // Init List Adapter with Recyler View
+        // Initialize List Adapter with Recyler View
         initListAdapter();
 
         // Hide Progress Indicator
@@ -146,14 +162,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setSupportActionBar(bottomAppBar);
         getSupportActionBar().hide();
 
-        // Handle Sheet Behavior State & Slide
+        // Handle Persistent Bottom Sheet State & Slide
         bottomSheetBehavior = BottomSheetBehavior.from(perBottomSheet);
         bottomSheetBehavior.addBottomSheetCallback(myBottomBehavior);
         bottomAppBar.performHide();
+        bottomSheetBehavior.setDraggable(false);
 
         // Initialize Bottom Sheet Dialog
         initModalBottomSheet();
-
 
     } // <--- end of onCreate --->
 
@@ -219,108 +235,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .requireLensFacing(CameraSelector.LENS_FACING_BACK).build();
             preview.setSurfaceProvider(previewView.createSurfaceProvider());
 
-            // Use Case: Image Analyzer
-            ImageAnalysis imageAnalyzer = new ImageAnalysis.Builder()
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST) // non-blocking mode
-                    .build();
-
-            imageAnalyzer.setAnalyzer(cameraExecutor, image -> {
-
-                Bitmap bitmapFrame = previewView.getBitmap();
-                String encodeBitmap = encodeBitmapImage(bitmapFrame);
-
-                if (pyObject != null && encodeBitmap != null && isRecognizerActivated) {
-
-                    // Recognize Idol (Average Time to Recognize: 1 sec)
-                    long start = System.currentTimeMillis();
-                    PyObject stageNameAndBbox = pyObject.callAttr("detect_face_fr", encodeBitmap);
-                    long end = System.currentTimeMillis();
-                    showOrHideProgInd(false);
-                    isRecognizerActivated = false;
-                    Log.e(TAG, "Time Taken: " + (end-start));
-
-                    // Faces To Java List
-                    List<PyObject> stageNameAndBboxList = stageNameAndBbox.asList();
-                    Log.e(TAG, stageNameAndBboxList.toString());
-
-                    // Check for Empty List of Faces
-                    if (stageNameAndBboxList.isEmpty()) {
-                        showRecognizerMessage();
-                        Log.e(TAG, "No Faces Detected");
-                    }
-
-                    for (PyObject stageNameAndBboxE: stageNameAndBboxList) {
-
-                        // Show Idol's Stage Name
-                        String stageName = stageNameAndBboxE.asList().get(0).toString();
-                        setViewValue(stageNameTV, stageName);
-                        Log.e(TAG, stageName);
-
-                        // Show Cropped Face
-                        int x1 = stageNameAndBboxE.asList().get(1).toInt();
-                        int x2 = stageNameAndBboxE.asList().get(2).toInt();
-                        int y1 = stageNameAndBboxE.asList().get(3).toInt();
-                        int y2 = stageNameAndBboxE.asList().get(4).toInt();
-                        Bitmap croppedFace = Bitmap.createBitmap(bitmapFrame, x1, y1, x2-x1, y2-y1);
-                        Log.e(TAG, "Face Axis: " + x1 + " " + x2 + " " + y1 + " " + y2);
-                        setImageView(croppedFace);
-
-                        // Store Bitmap Frame Temporarily
-                        myData.setRecognizedIdolBitmapCrop(croppedFace);
-                        myData.setRecognizedIdolBitmapFull(bitmapFrame);
-                        Log.e(TAG, "Full Bitmap: " + myData.getRecognizedIdolBitmapCrop());
-                        Log.e(TAG, "Cropped Bitmap: " + myData.getRecognizedIdolBitmapCrop());
-
-                        // Show Idol's Profile
-                        PyObject profile = pyObject.callAttr("get_idol_profile", stageName);
-                        Log.e(TAG, profile.toString());
-                        Map<PyObject, PyObject> profileValues = profile.asMap();
-
-                        if (!profileValues.isEmpty()) {
-
-                            // Real Name
-                            setViewValue(realNameTV, profileValues.get("Real Name (Korean)").toString());
-
-                            // Group Name, Entertainment
-                            setViewValue(groupNameTV, profileValues.get("Group Name").toString());
-                            setViewValue(entTV, profileValues.get("Entertainment").toString());
-
-                            // Roles
-                            String rolesString = profileValues.get("Roles").toString();
-                            String[] rolesSeparated =  rolesString.split(", ");
-                            roles.clear();
-                            for (String role: rolesSeparated) {
-                                roles.add(new Role(role));
-                            }
-                            Log.e(TAG, Arrays.toString(rolesSeparated));
-                            updateRoleRV();
-
-                            // Stats
-                            String birthDateStr = profileValues.get("Birth Date").toString();
-                            Log.e(TAG, birthDateStr);
-                            if (!birthDateStr.equalsIgnoreCase("nan")) {
-                                int age = calculateAge(birthDateStr);
-                                setViewValue(ageTV, age + "");
-                            }
-                            setViewValue(heightTV, profileValues.get("Height").toString() + " cm");
-                            setViewValue(weightTV, profileValues.get("Weight").toString() + " kg");
-                            setViewValue(bloodTypeTV, profileValues.get("Blood Type").toString());
-
-                            // Nationality
-                            setViewValue(nationalityTV, profileValues.get("Nationality").toString());
-
-                        } // <-- end of checking for empty profile values -->
-
-                    } // <-- end of iterating faces -->
-
-                } // <-- end of checking for null -->
-
-                image.close();
-            });
-
             try {
                 cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer);
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview);
             } catch (Exception exc) {
                 Log.e(TAG, "Use case binding failed", exc);
             }
@@ -360,19 +277,161 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume called");
-        // image analysis is called again
+        Log.e(TAG, "onResume called");
         if (allPermissionsGranted()) {
             startCamera();
-            Log.d(TAG, "image analysis started");
         }
+        MySharedPreference mySharedPreference = new MySharedPreference(this);
+        if (mySharedPreference.getData("myData").getIdol().getStageName() != null) {
+            Log.e(TAG, "Not Null My Data");
+//            MyData.setMyData();
+            // Populate Last Recognized Idol
+            Idol lastIdol = mySharedPreference.getData("myData").getIdol();
+            stageNameTV.setText(lastIdol.getStageName());
+            realNameTV.setText(lastIdol.getRealName());
+            groupNameTV.setText(lastIdol.getGroup());
+            entTV.setText(lastIdol.getEntertainment());
+            ageTV.setText(lastIdol.getAge());
+            heightTV.setText(lastIdol.getHeight());
+            weightTV.setText(lastIdol.getWeight());
+            bloodTypeTV.setText(lastIdol.getBloodType());
+            roles.clear();
+            for (Role role : lastIdol.getRoles()) {
+                roles.add(role);
+            }
+            rolesListAdapterRV.notifyDataSetChanged();
+            bottomSheetBehavior.setDraggable(true);
+        } else {
+            Log.e(TAG, "Null My Data");
+        }
+//        Log.e(TAG, myDataRe.getIdol().getStageName());
+//        MyData.setMyData(myData);
     }
 
-    // ===========================================================================================
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.e(TAG, "onDestroy called");
         cameraExecutor.shutdown();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.e(TAG, "onPause called");
+        MySharedPreference mySharedPreference = new MySharedPreference(getApplicationContext());
+        boolean isSaved = mySharedPreference.saveData("myData", myData);
+        Log.e(TAG, "isSaved: " + isSaved);
+    }
+
+    // ===========================================================================================
+    private void performRecognition() {
+        // Capture Image
+        Bitmap bitmapFrame = previewView.getBitmap();
+        String encodeBitmap = encodeBitmapImage(bitmapFrame);
+
+        if (pyObject != null && encodeBitmap != null) {
+
+            // Recognize Idol (Average Time to Recognize: 2 sec)
+            long start = System.currentTimeMillis();
+            PyObject stageNameAndBbox = pyObject.callAttr("detect_face_fr", encodeBitmap);
+            long end = System.currentTimeMillis();
+            showOrHideProgInd(false);
+            Log.e(TAG, "Time Taken: " + (end-start));
+
+            // Faces To Java List
+            List<PyObject> stageNameAndBboxList = stageNameAndBbox.asList();
+            Log.e(TAG, stageNameAndBboxList.toString());
+
+            // Check for Empty List of Faces
+            if (stageNameAndBboxList.isEmpty()) {
+                showRecognizerMessage();
+                Log.e(TAG, "No Faces Detected");
+                bottomSheetBehavior.setDraggable(false);
+            } else {
+                bottomSheetBehavior.setDraggable(true);
+            }
+
+            for (PyObject stageNameAndBboxE: stageNameAndBboxList) {
+
+                // Show Idol's Stage Name
+                String stageName = stageNameAndBboxE.asList().get(0).toString();
+                setViewValue(stageNameTV, stageName);
+                Log.e(TAG, stageName);
+
+                // Show Cropped Face
+                int x1 = stageNameAndBboxE.asList().get(1).toInt();
+                int x2 = stageNameAndBboxE.asList().get(2).toInt();
+                int y1 = stageNameAndBboxE.asList().get(3).toInt();
+                int y2 = stageNameAndBboxE.asList().get(4).toInt();
+                Bitmap croppedFace = Bitmap.createBitmap(bitmapFrame, x1, y1, x2-x1, y2-y1);
+                Log.e(TAG, "Face Axis: " + x1 + " " + x2 + " " + y1 + " " + y2);
+                setImageView(croppedFace);
+
+                // Store Bitmap Frame Temporarily (for displaying and saving)
+                myData.setRecognizedIdolBitmapCrop(croppedFace);
+                myData.setRecognizedIdolBitmapFull(bitmapFrame);
+                Log.e(TAG, "Full Bitmap: " + myData.getRecognizedIdolBitmapCrop());
+                Log.e(TAG, "Cropped Bitmap: " + myData.getRecognizedIdolBitmapCrop());
+
+                // Show Idol's Profile
+                PyObject profile = pyObject.callAttr("get_idol_profile", stageName);
+                Log.e(TAG, profile.toString());
+                Map<PyObject, PyObject> profileValues = profile.asMap();
+
+                if (!profileValues.isEmpty()) {
+
+                    // Real Name
+                    String realName = profileValues.get("Real Name (Korean)").toString();
+                    setViewValue(realNameTV, realName);
+
+                    // Group Name, Entertainment
+                    String group = profileValues.get("Group Name").toString();
+                    String entertainment = profileValues.get("Entertainment").toString();
+                    setViewValue(groupNameTV, group);
+                    setViewValue(entTV, entertainment);
+
+                    // Roles
+                    String rolesString = profileValues.get("Roles").toString();
+                    String[] rolesSeparated =  rolesString.split(", ");
+                    roles.clear();
+                    for (String role: rolesSeparated) {
+                        roles.add(new Role(role));
+                    }
+                    Log.e(TAG, Arrays.toString(rolesSeparated));
+                    updateRoleRV();
+
+                    // Stats
+                    String birthDateStr = profileValues.get("Birth Date").toString();
+                    Log.e(TAG, birthDateStr);
+                    int age = 0;
+                    if (!birthDateStr.equalsIgnoreCase("nan")) {
+                        age = calculateAge(birthDateStr);
+                        setViewValue(ageTV, age + "");
+                    }
+                    String height = profileValues.get("Height").toString() + " cm";
+                    setViewValue(heightTV, height);
+                    String weight = profileValues.get("Weight").toString() + " kg";
+                    setViewValue(weightTV, weight);
+                    String blood_type = profileValues.get("Blood Type").toString();
+                    setViewValue(bloodTypeTV, blood_type);
+
+                    // Nationality
+                    String nationality = profileValues.get("Nationality").toString();
+                    setViewValue(nationalityTV, nationality);
+
+                    // Store Idol Temporarily (for saving)
+                    Idol idol = new Idol(stageName, realName, group, entertainment,
+                            String.valueOf(age), height, weight, blood_type, roles);
+                    myData.setIdol(idol);
+
+                    Log.e(TAG, myData.getIdol().getStageName());
+
+                } // <-- end of checking for empty profile values -->
+
+            } // <-- end of iterating faces -->
+
+        } // <-- end of checking for null -->
     }
 
     // ===========================================================================================
@@ -416,8 +475,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case R.id.group_ig_text_view:
                         groupIgTV.setText(value);
                         break;
-
-
                 }
             }
         });
@@ -477,21 +534,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.recognizer_button:
-                isRecognizerActivated = true;
                 recognizerProgInd.show();
+                new Thread( new Runnable() {
+                    @Override public void run() {
+                        performRecognition();
+                    }
+                } ).start();
                 break;
             case R.id.save_button:
-                // Reference: https://www.section.io/engineering-education/bottom-sheet-dialogs-using-android-studio/
                 bottomSheetDialog.show();
                 if (myData.getRecognizedIdolBitmapCrop() != null && myData.getRecognizedIdolBitmapFull() != null) {
-                    Log.e(TAG, "not null");
+                    Log.e(TAG, "Idol Crop & Full Bitmap Not Null");
                     idolCroppedIV.setImageBitmap(myData.getRecognizedIdolBitmapCrop());
                     idolFullIV.setImageBitmap(myData.getRecognizedIdolBitmapFull());
                 }
                 break;
-            case R.id.favorite_button:
+            case R.id.idol_cropped_card:
+                try {
+                    boolean isSaved = saveImage(myData.getIdol().getStageName(), myData.getRecognizedIdolBitmapCrop());
+                    bottomSheetDialog.hide();
+                    Toast.makeText(this, "Saved to Gallery", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, isSaved + "");
+                } catch (IOException e) {
+                    Log.e(TAG, "Not saved");
+                }
+                break;
+            case R.id.idol_full_card:
+                try {
+                    boolean isSaved = saveImage(myData.getIdol().getStageName(), myData.getRecognizedIdolBitmapFull());
+                    bottomSheetDialog.hide();
+                    Toast.makeText(this, "Saved to Gallery", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, isSaved + "");
+                } catch (IOException e) {
+                    Log.e(TAG, "Not saved");
+                }
                 break;
         }
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        Log.e(TAG, "isChecked?" + isChecked);
     }
 
     // ===========================================================================================
@@ -581,13 +664,54 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // ===========================================================================================
     private void initModalBottomSheet() {
+        // Reference: https://www.section.io/engineering-education/bottom-sheet-dialogs-using-android-studio/
         bottomSheetDialog = new BottomSheetDialog(this);
         bottomSheetDialog.setContentView(R.layout.modal_bottom_sheet);
+        // Modal Bottom Sheet Views
         idolCroppedIV = bottomSheetDialog.findViewById(R.id.idol_cropped_image_view);
         idolFullIV = bottomSheetDialog.findViewById(R.id.idol_full_image_view);
         idolCroppedCard = bottomSheetDialog.findViewById(R.id.idol_cropped_card);
         idolFullCard = bottomSheetDialog.findViewById(R.id.idol_full_card);
+        // Card is Clicked
+        idolFullCard.setOnClickListener(this);
+        idolCroppedCard.setOnClickListener(this);
     }
+
+    // ===========================================================================================
+    private boolean saveImage(String filename, Bitmap bitmap) throws IOException {
+        // Reference: https://stackoverflow.com/questions/63776744/save-bitmap-image-to-specific-location-of-gallery-android-10
+        boolean isSaved = false;
+        OutputStream fos;
+        String folderName =  "My Kpop Idols";
+        // API Level 29 (Q)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentResolver resolver = getApplicationContext().getContentResolver();
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
+            contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, "DCIM/" + folderName);
+            Uri imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+            fos = resolver.openOutputStream(imageUri);
+        }
+        // API Level 28 (Pie) & Lower
+        else {
+            String imagesDir = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DCIM).toString() + File.separator + folderName;
+            File fileDir = new File(imagesDir);
+            if (!fileDir.exists()) {
+                fileDir.mkdir();
+            }
+            File imageFile = new File(fileDir, filename + ".png");
+            fos = new FileOutputStream(imageFile);
+        }
+        isSaved = bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        fos.flush();
+        fos.close();
+        return isSaved;
+    }
+
+    // ===========================================================================================
+
 
 
 } // <---  end of MainActivity --->

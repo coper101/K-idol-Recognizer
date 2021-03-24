@@ -34,6 +34,17 @@
         <item name="android:textColor">@color/white_500</item>
     </style>
 
+    <style name="ModalTitle" parent="Title">
+        <item name="android:textSize">21dp</item>
+        <item name="android:textFontWeight" tools:targetApi="p">300</item>
+    </style>
+
+    <style name="ModalLabel" parent="Title">
+        <item name="android:textSize">15dp</item>
+        <item name="android:textFontWeight" tools:targetApi="p">350</item>
+        <item name="android:textColor">@color/white_400</item>
+    </style>
+
     <!-- Card Styles -->
     <style name="Card" parent="">
         <item name="cardBackgroundColor">@color/space_gray</item>
