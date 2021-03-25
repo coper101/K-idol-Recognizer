@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
@@ -14,8 +13,11 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -23,7 +25,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
@@ -39,6 +40,12 @@ import android.widget.Toast;
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
+import com.daryl.kidolrecognizer.Data.Idol;
+import com.daryl.kidolrecognizer.Data.MyData;
+import com.daryl.kidolrecognizer.RecyclerView.Role;
+import com.daryl.kidolrecognizer.RecyclerView.RolesListAdapterWithRecyclerView;
+import com.daryl.kidolrecognizer.RecyclerView.SNS;
+import com.daryl.kidolrecognizer.RecyclerView.SNSListAdapterWithRecyclerView;
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -63,7 +70,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.prefs.Preferences;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
@@ -77,18 +83,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // Data
     private MyData myData;
 
-    // Recycler View
+    // Recycler View - Roles & SNS
     private ArrayList<Role> roles = new ArrayList<>();
     private RolesListAdapterWithRecyclerView rolesListAdapterRV;
     private RecyclerView rolesRV;
+
+    private ArrayList<SNS> snsList = new ArrayList<>();
+    private SNSListAdapterWithRecyclerView snsListAdapterRV;
+    private RecyclerView snsRV;
 
     // Views
     private TextView
             stageNameTV, realNameTV,
             groupNameTV, entTV,
             heightTV, weightTV, bloodTypeTV,
-            nationalityTV, ageTV,
-            idolIgTV, groupIgTV;
+            nationalityTV, ageTV;
     private ImageView faceIV;
     private AppCompatImageButton recognizerBtn;
     private LinearProgressIndicator recognizerProgInd;
@@ -135,10 +144,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         cameraExecutor = Executors.newSingleThreadExecutor();
 
+        // Data
         myData = MyData.getMyData();
 
         // Initialize Views
         initViews();
+
+//        SharedPreferences sp = getApplicationContext().getSharedPreferences("My Data", Context.MODE_PRIVATE);
+//        GsonBuilder gsonBuilder = new GsonBuilder();
+//        String jsonString = gsonBuilder.create().toJson(myData);
+//        sp.edit().putString("my data", jsonString).commit();
 
         // Check Python is Started
         if (! Python.isStarted()) {
@@ -152,8 +167,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         saveBtn.setOnClickListener(this);
         favoriteBtn.setOnCheckedChangeListener(this);
 
-        // Initialize List Adapter with Recyler View
+        // Initialize List Adapter with Recyler View - Roles & SNS
         initListAdapter();
+        initSNSListAdapter();
 
         // Hide Progress Indicator
         recognizerProgInd.hide();
@@ -198,8 +214,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         weightTV = findViewById(R.id.weight_text_view);
         bloodTypeTV = findViewById(R.id.blood_type_text_view);
         nationalityTV = findViewById(R.id.nationality_text_view);
-        idolIgTV = findViewById(R.id.idol_ig_text_view);
-        groupIgTV = findViewById(R.id.group_ig_text_view);
+        snsRV = findViewById(R.id.sns_recycler_view);
         // Bottom Bar for Buttons
         bottomAppBar = findViewById(R.id.bottom_app_bar);
         saveBtn = findViewById(R.id.save_button);
@@ -281,31 +296,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (allPermissionsGranted()) {
             startCamera();
         }
-        MySharedPreference mySharedPreference = new MySharedPreference(this);
-        if (mySharedPreference.getData("myData").getIdol().getStageName() != null) {
-            Log.e(TAG, "Not Null My Data");
-//            MyData.setMyData();
-            // Populate Last Recognized Idol
-            Idol lastIdol = mySharedPreference.getData("myData").getIdol();
+        SharedPreferences sp = getApplicationContext().getSharedPreferences("My Data" ,Context.MODE_PRIVATE);
+        String sc = sp.getString("my data","{}");
+        Log.e(TAG, sc);
+        Toast.makeText(this, "onResume: " + sc, Toast.LENGTH_SHORT).show();
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        MyData data = gsonBuilder.create().fromJson(sc, MyData.class);
+        if (sc.equals("{}")) {
+            Toast.makeText(this, "on Resume: Empty Data", Toast.LENGTH_SHORT).show();
+            bottomSheetBehavior.setDraggable(false);
+        } else {
+            long start = System.currentTimeMillis();
+            Toast.makeText(this, "on Resume: Not Empty Data", Toast.LENGTH_SHORT).show();
+            Idol lastIdol = data.getIdol();
             stageNameTV.setText(lastIdol.getStageName());
             realNameTV.setText(lastIdol.getRealName());
             groupNameTV.setText(lastIdol.getGroup());
             entTV.setText(lastIdol.getEntertainment());
+            // Roles
+            roles.clear();
+            for (Role role: lastIdol.getRoles()) {
+                roles.add(role);
+            }
+            rolesListAdapterRV.notifyDataSetChanged();
             ageTV.setText(lastIdol.getAge());
             heightTV.setText(lastIdol.getHeight());
             weightTV.setText(lastIdol.getWeight());
             bloodTypeTV.setText(lastIdol.getBloodType());
-            roles.clear();
-            for (Role role : lastIdol.getRoles()) {
-                roles.add(role);
+            nationalityTV.setText(lastIdol.getNationality());
+            // SNS
+            snsList.clear();
+            for (SNS sns: lastIdol.getSnsList()) {
+                snsList.add(sns);
             }
-            rolesListAdapterRV.notifyDataSetChanged();
+            snsListAdapterRV.notifyDataSetChanged();
             bottomSheetBehavior.setDraggable(true);
-        } else {
-            Log.e(TAG, "Null My Data");
+
+            faceIV.setImageBitmap(data.getRecognizedIdolBitmapCrop());
+            idolFullIV.setImageBitmap(data.getRecognizedIdolBitmapFull());
+            idolCroppedIV.setImageBitmap(data.getRecognizedIdolBitmapCrop());
+            long end = System.currentTimeMillis();
+
+            Log.e(TAG, "Time taken: " + (end - start));
         }
-//        Log.e(TAG, myDataRe.getIdol().getStageName());
-//        MyData.setMyData(myData);
+
+
     }
 
     @Override
@@ -319,18 +355,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onPause() {
         super.onPause();
         Log.e(TAG, "onPause called");
-        MySharedPreference mySharedPreference = new MySharedPreference(getApplicationContext());
-        boolean isSaved = mySharedPreference.saveData("myData", myData);
-        Log.e(TAG, "isSaved: " + isSaved);
+        SharedPreferences sp = getApplicationContext().getSharedPreferences("My Data", Context.MODE_PRIVATE);
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        String jsonString = gsonBuilder.create().toJson(myData);
+        sp.edit().putString("my data", jsonString).commit();
+
+        Toast.makeText(this, "onPause: " + jsonString, Toast.LENGTH_SHORT).show();
     }
 
     // ===========================================================================================
     private void performRecognition() {
+
         // Capture Image
         Bitmap bitmapFrame = previewView.getBitmap();
         String encodeBitmap = encodeBitmapImage(bitmapFrame);
 
         if (pyObject != null && encodeBitmap != null) {
+
+            // Get type of bitmap passed to python
+            PyObject type = pyObject.callAttr("getType", bitmapFrame);
+            Log.e(TAG, type.toString());
 
             // Recognize Idol (Average Time to Recognize: 2 sec)
             long start = System.currentTimeMillis();
@@ -352,18 +396,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 bottomSheetBehavior.setDraggable(true);
             }
 
-            for (PyObject stageNameAndBboxE: stageNameAndBboxList) {
+            for (PyObject IdAndBboxE: stageNameAndBboxList) {
 
-                // Show Idol's Stage Name
-                String stageName = stageNameAndBboxE.asList().get(0).toString();
-                setViewValue(stageNameTV, stageName);
-                Log.e(TAG, stageName);
+                // Get Id of Idol
+                String id = IdAndBboxE.asList().get(0).toString();
+                Log.e(TAG, id);
 
                 // Show Cropped Face
-                int x1 = stageNameAndBboxE.asList().get(1).toInt();
-                int x2 = stageNameAndBboxE.asList().get(2).toInt();
-                int y1 = stageNameAndBboxE.asList().get(3).toInt();
-                int y2 = stageNameAndBboxE.asList().get(4).toInt();
+                int x1 = IdAndBboxE.asList().get(1).toInt();
+                int x2 = IdAndBboxE.asList().get(2).toInt();
+                int y1 = IdAndBboxE.asList().get(3).toInt();
+                int y2 = IdAndBboxE.asList().get(4).toInt();
                 Bitmap croppedFace = Bitmap.createBitmap(bitmapFrame, x1, y1, x2-x1, y2-y1);
                 Log.e(TAG, "Face Axis: " + x1 + " " + x2 + " " + y1 + " " + y2);
                 setImageView(croppedFace);
@@ -375,11 +418,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.e(TAG, "Cropped Bitmap: " + myData.getRecognizedIdolBitmapCrop());
 
                 // Show Idol's Profile
-                PyObject profile = pyObject.callAttr("get_idol_profile", stageName);
+                PyObject profile = pyObject.callAttr("get_idol_profile", id);
                 Log.e(TAG, profile.toString());
                 Map<PyObject, PyObject> profileValues = profile.asMap();
 
                 if (!profileValues.isEmpty()) {
+
+                    // Stage Name
+                    String stageName = profileValues.get("Stage Name").toString();
+                    setViewValue(stageNameTV, stageName);
 
                     // Real Name
                     String realName = profileValues.get("Real Name (Korean)").toString();
@@ -420,9 +467,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     String nationality = profileValues.get("Nationality").toString();
                     setViewValue(nationalityTV, nationality);
 
+                    // SNS
+                    String personalIG = profileValues.get("Personal IG").toString();
+                    String groupIG = profileValues.get("Group IG").toString();
+                    snsList.clear();
+                    if (!personalIG.equals("None")) {
+                        snsList.add(new SNS(personalIG, "Personal IG"));
+                    }
+                    snsList.add(new SNS(groupIG, "Group IG"));
+                    updateSNSRV();
+
                     // Store Idol Temporarily (for saving)
                     Idol idol = new Idol(stageName, realName, group, entertainment,
-                            String.valueOf(age), height, weight, blood_type, roles);
+                            String.valueOf(age), height, weight, blood_type, nationality,
+                            roles, snsList);
                     myData.setIdol(idol);
 
                     Log.e(TAG, myData.getIdol().getStageName());
@@ -469,12 +527,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case R.id.nationality_text_view:
                         nationalityTV.setText(value);
                         break;
-                    case R.id.idol_ig_text_view:
-                        idolIgTV.setText(value);
-                        break;
-                    case R.id.group_ig_text_view:
-                        groupIgTV.setText(value);
-                        break;
+//                    case R.id.personal_ig_text_view:
+//                        personalIGTV.setText(value);
+//                        break;
+//                    case R.id.group_ig_text_view:
+//                        groupIGTV.setText(value);
+//                        break;
                 }
             }
         });
@@ -494,6 +552,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void run() {
                 rolesListAdapterRV.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void updateSNSRV(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                snsListAdapterRV.notifyDataSetChanged();
             }
         });
     }
@@ -583,11 +650,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         GridLayoutManager layoutManager = new GridLayoutManager(this, 1, RecyclerView.HORIZONTAL, false);
         rolesRV.setLayoutManager(layoutManager);
         rolesRV.setAdapter(rolesListAdapterRV);
+    }
 
-        roles.add(new Role("Role 1"));
-        roles.add(new Role("Role 2"));
-        roles.add(new Role("Role 3"));
-        rolesListAdapterRV.notifyDataSetChanged();
+    private void initSNSListAdapter() {
+        snsListAdapterRV = new SNSListAdapterWithRecyclerView(snsList, this, R.layout.sns_item);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 1, RecyclerView.HORIZONTAL, false);
+        snsRV.setLayoutManager(layoutManager);
+        snsRV.setAdapter(snsListAdapterRV);
     }
 
     // ===========================================================================================
@@ -711,7 +780,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     // ===========================================================================================
-
+    // Reference: https://stackoverflow.com/questions/39807071/how-can-i-launch-instagram-app-on-button-click-android-studio
+    private void launchInstagram(String username) {
+        Uri uri = Uri.parse("http://instagram.com/_u/" + username);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        intent.setPackage("com.instagram.android");
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            Log.e(TAG, "Failed to launch Instagram with username " + username);
+        }
+    }
 
 
 } // <---  end of MainActivity --->

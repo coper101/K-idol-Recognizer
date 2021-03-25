@@ -28,7 +28,7 @@ def detect_face_fr(image_data):
     encodesCurFrame = face_recognition.face_encodings(imgSmall, facesCurFrame)
 
     # Loop Faces for Current Frame
-    namesBbox = []
+    idsBbox = []
     for encodeFace, faceLoc in zip(encodesCurFrame, facesCurFrame):
         matches = face_recognition.compare_faces(encodings, encodeFace)
         faceDis = face_recognition.face_distance(encodings, encodeFace)
@@ -37,17 +37,20 @@ def detect_face_fr(image_data):
         if matches[matchIndex]:
             # (1) label
             temp = []
-            name = labels[matchIndex]
-            temp.append(name)
+            label = labels[matchIndex]
+            temp.append(extractId(label))
             # (2) bounding box axis
             y1, x2, y2, x1 = faceLoc
             y1, x2, y2, x1 = y1*4, x2*4, y2*4, x1*4
             temp.extend([x1, x2, y1, y2])
             # add to nested list
-            namesBbox.append(temp)
+            idsBbox.append(temp)
 
-    return namesBbox
+    return idsBbox
 
+def extractId(label):
+    id = label.split('_')[0]
+    return id
 
 def retrieve_encodings_labels():
 
@@ -63,12 +66,12 @@ def retrieve_encodings_labels():
 
     return labels, encodings
 
-def get_idol_profile(stageName):
+def get_idol_profile(id):
 
     dataFileName = os.path.join(os.path.dirname(__file__), "Kpop_Idols_210321_CSV.csv")
     data = pd.read_csv(dataFileName)
 
-    fltr = data['Stage Name'] == stageName
+    fltr = data['Id'] == int(id)
     idol = data.loc[fltr]
 
     headerVal = data.columns.values.tolist()
@@ -84,6 +87,10 @@ def get_idol_profile(stageName):
             idolProfile[headerVal[i]] = idolVal[i]
 
     return idolProfile
+
+
+def getType(value):
+    return type(value)
 
 
 

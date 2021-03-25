@@ -22,7 +22,7 @@
     <string name="nationality_name">Nationality Name</string>
 
     <string name="sns">SNS</string>
-    <string name="idol_ig">Idol IG</string>
+    <string name="personal_ig">Personal IG</string>
     <string name="group_ig">Group IG</string>
 
     <string name="message">No Faces Detected.</string>
@@ -32,5 +32,7 @@
     <string name="save_to_gallery">Save to Gallery</string>
     <string name="cropped">Cropped</string>
     <string name="original">Original</string>
+    <string name="platform_name">Platform Name</string>
+    <string name="username">Username</string>
 
 </resources>

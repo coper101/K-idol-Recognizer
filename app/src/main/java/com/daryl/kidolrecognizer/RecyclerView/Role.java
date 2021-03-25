@@ -1,4 +1,4 @@
-package com.daryl.kidolrecognizer;
+package com.daryl.kidolrecognizer.RecyclerView;
 
 public class Role {
 

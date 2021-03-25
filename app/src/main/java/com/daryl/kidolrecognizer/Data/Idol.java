@@ -1,15 +1,20 @@
-package com.daryl.kidolrecognizer;
+package com.daryl.kidolrecognizer.Data;
+
+import com.daryl.kidolrecognizer.RecyclerView.Role;
+import com.daryl.kidolrecognizer.RecyclerView.SNS;
 
 import java.util.ArrayList;
 
 public class Idol {
 
     private String stageName, realName, group, entertainment,
-            age, height, weight, bloodType;
+            age, height, weight, bloodType, nationality;
     private ArrayList<Role> roles;
+    private ArrayList<SNS> snsList;
 
     public Idol(String stageName, String realName, String group, String entertainment,
-                String age, String height, String weight, String bloodType, ArrayList<Role> roles) {
+                String age, String height, String weight, String bloodType, String nationality,
+                ArrayList<Role> roles, ArrayList<SNS> snsList) {
         this.stageName = stageName;
         this.realName = realName;
         this.group = group;
@@ -18,7 +23,9 @@ public class Idol {
         this.height = height;
         this.weight = weight;
         this.bloodType = bloodType;
+        this.nationality = nationality;
         this.roles = roles;
+        this.snsList = snsList;
     }
 
     public String getStageName() {
@@ -85,11 +92,27 @@ public class Idol {
         this.bloodType = bloodType;
     }
 
+    public String getNationality() {
+        return nationality;
+    }
+
+    public void setNationality(String nationality) {
+        this.nationality = nationality;
+    }
+
     public ArrayList<Role> getRoles() {
         return roles;
     }
 
     public void setRoles(ArrayList<Role> roles) {
         this.roles = roles;
+    }
+
+    public ArrayList<SNS> getSnsList() {
+        return snsList;
+    }
+
+    public void setSnsList(ArrayList<SNS> snsList) {
+        this.snsList = snsList;
     }
 }

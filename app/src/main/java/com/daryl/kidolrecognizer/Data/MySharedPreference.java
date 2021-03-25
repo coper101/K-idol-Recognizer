@@ -1,9 +1,11 @@
-package com.daryl.kidolrecognizer;
+package com.daryl.kidolrecognizer.Data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
+import com.daryl.kidolrecognizer.Data.MyData;
 import com.google.gson.GsonBuilder;
 
 // Saving Object to Shared Preference using Gson Library
@@ -30,6 +32,11 @@ public class MySharedPreference {
         String jsonString = sp.getString(key, null);
         if (jsonString != null) {
             myData = gsonBuilder.create().fromJson(jsonString, MyData.class);
+        }
+        if (myData == null) {
+            Log.e("MySharedPreferences: ", "null");
+        } else {
+            Log.e("MySharedPreferences", "not null");
         }
         return myData;
     }

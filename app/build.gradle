@@ -83,4 +83,7 @@ dependencies {
     // GSON
     implementation 'com.google.code.gson:gson:2.8.6'
 
+    // SharedPreferences
+    implementation 'androidx.preference:preference:1.1.1'
+
 }
