@@ -93,4 +93,29 @@ def getType(value):
     return type(value)
 
 
+def update_favorite(id, isFave):
+
+    # proper bool string
+    properValue = value.title()
+
+    # valid bool string > update data frame and overwrite csv
+    if properValue == 'True' or properValue == 'False':
+        # convert to bool
+        boolValue = eval(properValue)
+
+        dataFileName = os.path.join(os.path.dirname(__file__), "Kpop_Idols_210321_CSV.csv")
+        data = pd.read_csv(dataFileName)
+
+        # update fave value of idol
+        fltr = data['Id'] == int(id)
+        data.loc[fltr, 'Favorite'] = boolValue
+
+        # save
+        data.to_csv('Kpop_Idols_210321_CSV.csv', index=False)
+
+        return True
+
+    return False
+
+
 

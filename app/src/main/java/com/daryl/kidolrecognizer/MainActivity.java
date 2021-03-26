@@ -72,7 +72,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+public class MainActivity extends AppCompatActivity
+        implements View.OnClickListener, CompoundButton.OnCheckedChangeListener, SNSListAdapterWithRecyclerView.OnItemClickListener {
 
     private static String TAG = MainActivity.class.getSimpleName();
 
@@ -149,11 +150,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Initialize Views
         initViews();
-
-//        SharedPreferences sp = getApplicationContext().getSharedPreferences("My Data", Context.MODE_PRIVATE);
-//        GsonBuilder gsonBuilder = new GsonBuilder();
-//        String jsonString = gsonBuilder.create().toJson(myData);
-//        sp.edit().putString("my data", jsonString).commit();
 
         // Check Python is Started
         if (! Python.isStarted()) {
@@ -340,8 +336,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             Log.e(TAG, "Time taken: " + (end - start));
         }
-
-
     }
 
     @Override
@@ -381,7 +375,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             PyObject stageNameAndBbox = pyObject.callAttr("detect_face_fr", encodeBitmap);
             long end = System.currentTimeMillis();
             showOrHideProgInd(false);
-            Log.e(TAG, "Time Taken: " + (end-start));
+            Log.e(TAG, "Time Taken to recog face: " + (end-start));
 
             // Faces To Java List
             List<PyObject> stageNameAndBboxList = stageNameAndBbox.asList();
@@ -417,8 +411,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.e(TAG, "Full Bitmap: " + myData.getRecognizedIdolBitmapCrop());
                 Log.e(TAG, "Cropped Bitmap: " + myData.getRecognizedIdolBitmapCrop());
 
-                // Show Idol's Profile
+                // Get Idol's Profile
+                start = System.currentTimeMillis();
                 PyObject profile = pyObject.callAttr("get_idol_profile", id);
+                end = System.currentTimeMillis();
+                Log.e(TAG, "Time taken to get profile values: " + (end - start));
                 Log.e(TAG, profile.toString());
                 Map<PyObject, PyObject> profileValues = profile.asMap();
 
@@ -641,7 +638,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        Log.e(TAG, "isChecked?" + isChecked);
+        Log.e(TAG, "isChecked: " + isChecked);
+//        String id = myData.getIdol().getId(); // create field for id of idol
+//        if (pyObject != null) {
+//            PyObject isUpdated = pyObject.callAttr("update_favorite", id, "True");
+//            if (isUpdated) {
+//                Toast.makeText(this, "Added to your favorites", Toast.LENGTH_SHORT).show();
+//            }
+//        }
     }
 
     // ===========================================================================================
@@ -657,6 +661,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         GridLayoutManager layoutManager = new GridLayoutManager(this, 1, RecyclerView.HORIZONTAL, false);
         snsRV.setLayoutManager(layoutManager);
         snsRV.setAdapter(snsListAdapterRV);
+        snsListAdapterRV.setOnItemClickListener(this);
+    }
+
+    // SNS List Adapter OnClick
+    @Override
+    public void onItemClick(int position) {
+        Toast.makeText(this, "Position Clicked: " + position, Toast.LENGTH_SHORT).show();
+        SNS sns = snsList.get(position);
+        launchInstagram(sns.getUsername());
     }
 
     // ===========================================================================================
@@ -782,15 +795,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // ===========================================================================================
     // Reference: https://stackoverflow.com/questions/39807071/how-can-i-launch-instagram-app-on-button-click-android-studio
     private void launchInstagram(String username) {
-        Uri uri = Uri.parse("http://instagram.com/_u/" + username);
+        // Open on Brower / Instgram App
+        Uri uri = Uri.parse("https://instagram.com/" + username);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        intent.setPackage("com.instagram.android");
-        try {
-            startActivity(intent);
-        } catch (ActivityNotFoundException e) {
-            Log.e(TAG, "Failed to launch Instagram with username " + username);
-        }
+        startActivity(intent);
     }
+
+    // ===========================================================================================
+//    private void addToLike
 
 
 } // <---  end of MainActivity --->
