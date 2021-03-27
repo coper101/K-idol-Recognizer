@@ -32,9 +32,9 @@
             android:layout_height="60dp"
             android:layout_gravity="center_vertical"
             android:src="@drawable/idol_search_icon"
-            android:background="@drawable/button_recognizer"
+            android:background="@drawable/button_recognizer_ripple_red"
             app:layout_anchor="@id/persistent_bottom_sheet"
-            android:elevation="1dp"/>
+            android:elevation="1dp" />
 
     </LinearLayout>
 

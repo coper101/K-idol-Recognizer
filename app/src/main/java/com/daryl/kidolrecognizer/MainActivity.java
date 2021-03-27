@@ -18,9 +18,11 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Outline;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,6 +31,7 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewOutlineProvider;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -54,7 +57,6 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.gson.GsonBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -65,8 +67,10 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -100,6 +104,7 @@ public class MainActivity extends AppCompatActivity
             heightTV, weightTV, bloodTypeTV,
             nationalityTV, ageTV;
     private ImageView faceIV;
+    private MaterialCardView imageFaceCard;
     private AppCompatImageButton recognizerBtn;
     private LinearProgressIndicator recognizerProgInd;
     private CoordinatorLayout mainView;
@@ -202,6 +207,7 @@ public class MainActivity extends AppCompatActivity
         stageNameTV = findViewById(R.id.stage_name_text_view);
         realNameTV = findViewById(R.id.real_name_text_view);
         faceIV = findViewById(R.id.face_image_view);
+        imageFaceCard = findViewById(R.id.face_image_card_view);
         groupNameTV = findViewById(R.id.group_name_text_view);
         entTV = findViewById(R.id.entertainment_text_view);
         rolesRV = findViewById(R.id.roles_recycler_view);
@@ -292,50 +298,6 @@ public class MainActivity extends AppCompatActivity
         if (allPermissionsGranted()) {
             startCamera();
         }
-        SharedPreferences sp = getApplicationContext().getSharedPreferences("My Data" ,Context.MODE_PRIVATE);
-        String sc = sp.getString("my data","{}");
-        Log.e(TAG, sc);
-        Toast.makeText(this, "onResume: " + sc, Toast.LENGTH_SHORT).show();
-
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        MyData data = gsonBuilder.create().fromJson(sc, MyData.class);
-        if (sc.equals("{}")) {
-            Toast.makeText(this, "on Resume: Empty Data", Toast.LENGTH_SHORT).show();
-            bottomSheetBehavior.setDraggable(false);
-        } else {
-            long start = System.currentTimeMillis();
-            Toast.makeText(this, "on Resume: Not Empty Data", Toast.LENGTH_SHORT).show();
-            Idol lastIdol = data.getIdol();
-            stageNameTV.setText(lastIdol.getStageName());
-            realNameTV.setText(lastIdol.getRealName());
-            groupNameTV.setText(lastIdol.getGroup());
-            entTV.setText(lastIdol.getEntertainment());
-            // Roles
-            roles.clear();
-            for (Role role: lastIdol.getRoles()) {
-                roles.add(role);
-            }
-            rolesListAdapterRV.notifyDataSetChanged();
-            ageTV.setText(lastIdol.getAge());
-            heightTV.setText(lastIdol.getHeight());
-            weightTV.setText(lastIdol.getWeight());
-            bloodTypeTV.setText(lastIdol.getBloodType());
-            nationalityTV.setText(lastIdol.getNationality());
-            // SNS
-            snsList.clear();
-            for (SNS sns: lastIdol.getSnsList()) {
-                snsList.add(sns);
-            }
-            snsListAdapterRV.notifyDataSetChanged();
-            bottomSheetBehavior.setDraggable(true);
-
-            faceIV.setImageBitmap(data.getRecognizedIdolBitmapCrop());
-            idolFullIV.setImageBitmap(data.getRecognizedIdolBitmapFull());
-            idolCroppedIV.setImageBitmap(data.getRecognizedIdolBitmapCrop());
-            long end = System.currentTimeMillis();
-
-            Log.e(TAG, "Time taken: " + (end - start));
-        }
     }
 
     @Override
@@ -349,12 +311,6 @@ public class MainActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         Log.e(TAG, "onPause called");
-        SharedPreferences sp = getApplicationContext().getSharedPreferences("My Data", Context.MODE_PRIVATE);
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        String jsonString = gsonBuilder.create().toJson(myData);
-        sp.edit().putString("my data", jsonString).commit();
-
-        Toast.makeText(this, "onPause: " + jsonString, Toast.LENGTH_SHORT).show();
     }
 
     // ===========================================================================================
@@ -383,14 +339,18 @@ public class MainActivity extends AppCompatActivity
 
             // Check for Empty List of Faces
             if (stageNameAndBboxList.isEmpty()) {
-                showRecognizerMessage();
-                Log.e(TAG, "No Faces Detected");
+                Log.e(TAG, "No Match");
+                setViewValue(stageNameTV, "No Match");
+                setViewValue(realNameTV, "Try again");
+                setImageView(null);
                 bottomSheetBehavior.setDraggable(false);
             } else {
                 bottomSheetBehavior.setDraggable(true);
             }
 
             for (PyObject IdAndBboxE: stageNameAndBboxList) {
+
+                updateOutlineProvider();
 
                 // Get Id of Idol
                 String id = IdAndBboxE.asList().get(0).toString();
@@ -474,10 +434,14 @@ public class MainActivity extends AppCompatActivity
                     snsList.add(new SNS(groupIG, "Group IG"));
                     updateSNSRV();
 
+                    // Favorite
+                    boolean isFavorite = profileValues.get("Favorite").toBoolean();
+                    updateFaveButton(isFavorite);
+
                     // Store Idol Temporarily (for saving)
-                    Idol idol = new Idol(stageName, realName, group, entertainment,
+                    Idol idol = new Idol(id, stageName, realName, group, entertainment,
                             String.valueOf(age), height, weight, blood_type, nationality,
-                            roles, snsList);
+                            isFavorite, roles, snsList);
                     myData.setIdol(idol);
 
                     Log.e(TAG, myData.getIdol().getStageName());
@@ -524,12 +488,6 @@ public class MainActivity extends AppCompatActivity
                     case R.id.nationality_text_view:
                         nationalityTV.setText(value);
                         break;
-//                    case R.id.personal_ig_text_view:
-//                        personalIGTV.setText(value);
-//                        break;
-//                    case R.id.group_ig_text_view:
-//                        groupIGTV.setText(value);
-//                        break;
                 }
             }
         });
@@ -562,6 +520,15 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    private void updateFaveButton(boolean isFave) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                favoriteBtn.setChecked(isFave);
+            }
+        });
+    }
+
     private void showOrHideProgInd(boolean show){
         runOnUiThread(new Runnable() {
             @Override
@@ -575,12 +542,11 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    private void showRecognizerMessage(){
+    private void updateOutlineProvider() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Snackbar.make(mainView, R.string.message, Snackbar.LENGTH_SHORT)
-                        .show();
+                imageFaceCard.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
             }
         });
     }
@@ -598,12 +564,16 @@ public class MainActivity extends AppCompatActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.recognizer_button:
+                shuffleRecogBtnRippleColor();
+                shuffleProgIndColors();
                 recognizerProgInd.show();
-                new Thread( new Runnable() {
+                bottomSheetBehavior.setDraggable(false);
+                Thread recognitionThread = new Thread( new Runnable() {
                     @Override public void run() {
                         performRecognition();
                     }
-                } ).start();
+                } );
+                recognitionThread.start();
                 break;
             case R.id.save_button:
                 bottomSheetDialog.show();
@@ -639,13 +609,27 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         Log.e(TAG, "isChecked: " + isChecked);
-//        String id = myData.getIdol().getId(); // create field for id of idol
-//        if (pyObject != null) {
-//            PyObject isUpdated = pyObject.callAttr("update_favorite", id, "True");
-//            if (isUpdated) {
-//                Toast.makeText(this, "Added to your favorites", Toast.LENGTH_SHORT).show();
-//            }
-//        }
+        String id = myData.getIdol().getId();
+        if (pyObject != null) {
+            String boolVal = isChecked ? "True" : "False";
+            PyObject isUpdatedStr = pyObject.callAttr("update_favorite", id, boolVal);
+            boolean isUpdated = isUpdatedStr.toBoolean();
+            if (isUpdated && isChecked) {
+                Toast.makeText(this, "You liked this idol", Toast.LENGTH_SHORT).show();
+            } else if (isUpdated && !isChecked) {
+                Toast.makeText(this, "You disliked this idol", Toast.LENGTH_SHORT).show();
+            }
+
+            PyObject profile = pyObject.callAttr("get_idol_profile", id);
+            Map<PyObject, PyObject> profileValues = profile.asMap();
+            String stageName = profileValues.get("Stage Name").toString();
+            boolean isFavorite = profileValues.get("Favorite").toBoolean();
+            Toast.makeText(this, stageName + " " + isFavorite, Toast.LENGTH_SHORT).show();
+
+            // Update Data Idol
+            myData.getIdol().setFavorite(isFavorite);
+
+        }
     }
 
     // ===========================================================================================
@@ -745,8 +729,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     // ===========================================================================================
+    // Reference: https://www.section.io/engineering-education/bottom-sheet-dialogs-using-android-studio/
     private void initModalBottomSheet() {
-        // Reference: https://www.section.io/engineering-education/bottom-sheet-dialogs-using-android-studio/
         bottomSheetDialog = new BottomSheetDialog(this);
         bottomSheetDialog.setContentView(R.layout.modal_bottom_sheet);
         // Modal Bottom Sheet Views
@@ -760,8 +744,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     // ===========================================================================================
+    // Reference: https://stackoverflow.com/questions/63776744/save-bitmap-image-to-specific-location-of-gallery-android-10
     private boolean saveImage(String filename, Bitmap bitmap) throws IOException {
-        // Reference: https://stackoverflow.com/questions/63776744/save-bitmap-image-to-specific-location-of-gallery-android-10
         boolean isSaved = false;
         OutputStream fos;
         String folderName =  "My Kpop Idols";
@@ -802,7 +786,33 @@ public class MainActivity extends AppCompatActivity
     }
 
     // ===========================================================================================
-//    private void addToLike
+    private void shuffleProgIndColors() {
+        ArrayList<Integer> accentColors = new ArrayList<>();
+        accentColors.add(getColor(R.color.green_accent));
+        accentColors.add(getColor(R.color.red_accent));
+        accentColors.add(getColor(R.color.yellow_accent));
+        accentColors.add(getColor(R.color.blue_accent));
+        Collections.shuffle(accentColors);
+
+        // Change Progress Indicator Color
+        int color1 = accentColors.get(0);
+        int color2 = accentColors.get(1);
+        int color3 = accentColors.get(2);
+        int color4 = accentColors.get(3);
+        recognizerProgInd.setIndicatorColor(color1, color2, color3, color4);
+    }
+
+    private void shuffleRecogBtnRippleColor() {
+        ArrayList<Drawable> drawables = new ArrayList<>();
+        drawables.add(getDrawable(R.drawable.button_recognizer_ripple_green));
+        drawables.add(getDrawable(R.drawable.button_recognizer_ripple_red));
+        drawables.add(getDrawable(R.drawable.button_recognizer_ripple_yellow));
+        drawables.add(getDrawable(R.drawable.button_recognizer_ripple_blue));
+        // random number from 0 - 3
+        int randNum = new Random().nextInt(drawables.size());
+        // Change Recognizer Button Ripple Color
+        recognizerBtn.setBackground(drawables.get(randNum));
+    }
 
 
 } // <---  end of MainActivity --->

@@ -10,7 +10,6 @@ public class MyData {
     private Bitmap recognizedIdolBitmapFull;
     private Bitmap recognizedIdolBitmapCrop;
     private Idol idol;
-    private String test;
 
     // Instantiation only allowed within this class
     private MyData() {}
@@ -44,11 +43,7 @@ public class MyData {
         this.idol = idol;
     }
 
-    public String getTest() {
-        return test;
-    }
-
-    public void setTest(String test) {
-        this.test = test;
+    public boolean isAllNotNull() {
+        return idol != null && recognizedIdolBitmapCrop != null && recognizedIdolBitmapFull != null;
     }
 }

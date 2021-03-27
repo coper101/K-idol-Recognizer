@@ -7,14 +7,17 @@ import java.util.ArrayList;
 
 public class Idol {
 
-    private String stageName, realName, group, entertainment,
+    private String id, stageName, realName, group, entertainment,
             age, height, weight, bloodType, nationality;
+    private boolean isFavorite;
     private ArrayList<Role> roles;
     private ArrayList<SNS> snsList;
 
-    public Idol(String stageName, String realName, String group, String entertainment,
+    public Idol(String id, String stageName, String realName, String group, String entertainment,
                 String age, String height, String weight, String bloodType, String nationality,
+                boolean isFavorite,
                 ArrayList<Role> roles, ArrayList<SNS> snsList) {
+        this.id = id;
         this.stageName = stageName;
         this.realName = realName;
         this.group = group;
@@ -24,8 +27,17 @@ public class Idol {
         this.weight = weight;
         this.bloodType = bloodType;
         this.nationality = nationality;
+        this.isFavorite = isFavorite;
         this.roles = roles;
         this.snsList = snsList;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getStageName() {
@@ -100,6 +112,14 @@ public class Idol {
         this.nationality = nationality;
     }
 
+    public boolean isFavorite() {
+        return isFavorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        isFavorite = favorite;
+    }
+
     public ArrayList<Role> getRoles() {
         return roles;
     }
@@ -115,4 +135,5 @@ public class Idol {
     public void setSnsList(ArrayList<SNS> snsList) {
         this.snsList = snsList;
     }
+
 }

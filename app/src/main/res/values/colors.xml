@@ -21,6 +21,19 @@
     <color name="white_400_A80">#99BDBDBD</color>
 
     <color name="transparent">#00000000</color>
+    
+    <color name="green_accent">#9EEC00</color>
+    <color name="red_accent">#FF7A7A</color>
+    <color name="yellow_accent">#FFFC6B</color>
+    <color name="blue_accent">#47DFFF</color>
+
+    <color name="green_accent_A50">#809EEC00</color>
+    <color name="red_accent_A50">#80FF7A7A</color>
+    <color name="yellow_accent_A50">#80C1FF6B</color>
+    <color name="blue_accent_A50">#8047DFFF</color>
+
+
+
 
 
 </resources>

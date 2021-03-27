@@ -1,6 +1,7 @@
 # Files imported into python directory
 # - labels.pickle
 # - encodings.pickle
+# - Kpop_Idols_210321_CSV.csv
 
 import os
 import numpy as np
@@ -69,7 +70,13 @@ def retrieve_encodings_labels():
 def get_idol_profile(id):
 
     dataFileName = os.path.join(os.path.dirname(__file__), "Kpop_Idols_210321_CSV.csv")
-    data = pd.read_csv(dataFileName)
+    dataFileNameUser = os.path.join(os.environ["HOME"], "Kpop_Idols_210321_CSV.csv")
+
+    # read from? home user directory OR python directory
+    if os.path.exists(dataFileNameUser):
+        data = pd.read_csv(dataFileNameUser)
+    else:
+        data = pd.read_csv(dataFileName)
 
     fltr = data['Id'] == int(id)
     idol = data.loc[fltr]
@@ -96,7 +103,7 @@ def getType(value):
 def update_favorite(id, isFave):
 
     # proper bool string
-    properValue = value.title()
+    properValue = isFave.title()
 
     # valid bool string > update data frame and overwrite csv
     if properValue == 'True' or properValue == 'False':
@@ -104,18 +111,47 @@ def update_favorite(id, isFave):
         boolValue = eval(properValue)
 
         dataFileName = os.path.join(os.path.dirname(__file__), "Kpop_Idols_210321_CSV.csv")
-        data = pd.read_csv(dataFileName)
+        dataFileNameUser = os.path.join(os.environ["HOME"], "Kpop_Idols_210321_CSV.csv")
+        # read from? home user directory OR python directory
+        if os.path.exists(dataFileNameUser):
+            data = pd.read_csv(dataFileNameUser)
+        else:
+            data = pd.read_csv(dataFileName)
 
         # update fave value of idol
         fltr = data['Id'] == int(id)
         data.loc[fltr, 'Favorite'] = boolValue
 
         # save
-        data.to_csv('Kpop_Idols_210321_CSV.csv', index=False)
+        if os.path.exists(dataFileNameUser):
+            data.to_csv(dataFileNameUser, index=False)
+        else:
+            data.to_csv(dataFileName, index=False)
 
         return True
 
     return False
+
+
+def save_idols_data_to_home():
+
+    dataFileName = os.path.join(os.path.dirname(__file__), "Kpop_Idols_210321_CSV.csv")
+    data = pd.read_csv(dataFileName)
+
+    # save data to home: /data/user/0/com.daryl.kidolrecognizer/files
+    homePath = os.environ["HOME"]
+    newFilePath = os.path.join(homePath, "Kpop_Idols_210321_CSV.csv")
+    data.to_csv(newFilePath, index=False)
+
+    exist = os.path.exists(newFilePath)
+
+    return exist
+
+def check_idols_data_from_home():
+    homePath = os.environ["HOME"]
+    newFilePath = os.path.join(homePath, "Kpop_Idols_210321_CSV.csv")
+    exist = os.path.exists(newFilePath)
+    return exist
 
 
 

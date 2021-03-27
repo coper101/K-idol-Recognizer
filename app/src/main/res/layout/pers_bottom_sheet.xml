@@ -74,12 +74,15 @@
             android:gravity="end">
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/face_image_card_view"
                 android:layout_width="70dp"
                 android:layout_height="70dp"
-                style="@style/CardImage">
+                style="@style/CardImage"
+                android:outlineProvider="none">
 
                 <ImageView
                     android:id="@+id/face_image_view"
+                    android:src="@drawable/search_illustration"
                     android:layout_width="70dp"
                     android:layout_height="70dp"
                     android:scaleType="fitXY"/>
@@ -186,13 +189,23 @@
                 android:layout_marginStart="@dimen/padding_left_right"
                 android:layout_marginEnd="15dp"
                 style="@style/Card">
-                <TextView
-                    android:id="@+id/age_text_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:paddingHorizontal="30dp"
-                    style="@style/CardText"
-                    android:text="@string/age"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="20dp">
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/ic__thapp3_02"/>
+                        <TextView
+                            android:id="@+id/age_text_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            style="@style/CardText"
+                            android:text="@string/age" />
+                    </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Height -->
