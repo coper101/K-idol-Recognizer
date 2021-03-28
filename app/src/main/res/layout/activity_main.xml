@@ -61,7 +61,7 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:button="@drawable/fave_selector"
-                app:buttonTint="@color/white_500"/>
+                app:buttonTint="@color/red_accent" />
 
             <Button
                 android:id="@+id/save_button"
@@ -75,6 +75,5 @@
         </LinearLayout>
 
     </com.google.android.material.bottomappbar.BottomAppBar>
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

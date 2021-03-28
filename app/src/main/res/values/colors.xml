@@ -22,15 +22,15 @@
 
     <color name="transparent">#00000000</color>
     
-    <color name="green_accent">#9EEC00</color>
-    <color name="red_accent">#FF7A7A</color>
-    <color name="yellow_accent">#FFFC6B</color>
-    <color name="blue_accent">#47DFFF</color>
+    <color name="green_accent">#CC9EEC00</color>
+    <color name="red_accent">#CCFF7A7A</color>
+    <color name="yellow_accent">#CCFFFC6B</color>
+    <color name="blue_accent">#CC47DFFF</color>
 
-    <color name="green_accent_A50">#809EEC00</color>
-    <color name="red_accent_A50">#80FF7A7A</color>
-    <color name="yellow_accent_A50">#80C1FF6B</color>
-    <color name="blue_accent_A50">#8047DFFF</color>
+    <color name="green_accent_A10">#1A9EEC00</color>
+    <color name="red_accent_A10">#1AFF7A7A</color>
+    <color name="yellow_accent_A10">#1AFFFC6B</color>
+    <color name="blue_accent_A10">#1A47DFFF</color>
 
 
 

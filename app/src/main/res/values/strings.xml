@@ -34,5 +34,6 @@
     <string name="original">Original</string>
     <string name="platform_name">Platform Name</string>
     <string name="username">Username</string>
+    <string name="cancel">Cancel</string>
 
 </resources>

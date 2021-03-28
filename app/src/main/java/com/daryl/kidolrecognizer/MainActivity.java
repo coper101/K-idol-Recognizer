@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity
     private BottomSheetDialog bottomSheetDialog;
     ImageView idolCroppedIV, idolFullIV;
     MaterialCardView idolCroppedCard, idolFullCard;
+    MaterialButton cancelBtn;
 
     // Access to Module
     PyObject pyObject;
@@ -342,7 +343,8 @@ public class MainActivity extends AppCompatActivity
                 Log.e(TAG, "No Match");
                 setViewValue(stageNameTV, "No Match");
                 setViewValue(realNameTV, "Try again");
-                setImageView(null);
+                setImageViewNoMatch();
+                updateOutlineProvider(1);
                 bottomSheetBehavior.setDraggable(false);
             } else {
                 bottomSheetBehavior.setDraggable(true);
@@ -350,7 +352,7 @@ public class MainActivity extends AppCompatActivity
 
             for (PyObject IdAndBboxE: stageNameAndBboxList) {
 
-                updateOutlineProvider();
+                updateOutlineProvider(0);
 
                 // Get Id of Idol
                 String id = IdAndBboxE.asList().get(0).toString();
@@ -502,6 +504,15 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    private void setImageViewNoMatch(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                faceIV.setImageDrawable(getDrawable(R.drawable.recognizer_no_match_illustration));
+            }
+        });
+    }
+
     private void updateRoleRV(){
         runOnUiThread(new Runnable() {
             @Override
@@ -542,11 +553,18 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    private void updateOutlineProvider() {
+    private void updateOutlineProvider(int key) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                imageFaceCard.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
+                switch (key) {
+                    case 0:
+                        imageFaceCard.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
+                        break;
+                    case 1:
+                        imageFaceCard.setOutlineProvider(null);
+                        break;
+                }
             }
         });
     }
@@ -602,6 +620,9 @@ public class MainActivity extends AppCompatActivity
                 } catch (IOException e) {
                     Log.e(TAG, "Not saved");
                 }
+                break;
+            case R.id.cancel_button:
+                bottomSheetDialog.dismiss();
                 break;
         }
     }
@@ -667,10 +688,12 @@ public class MainActivity extends AppCompatActivity
             int monthOfYear = Integer.valueOf(dates[1]);
             int dayOfMonth = Integer.valueOf(dates[0]);
 
-            LocalDate birthDate = LocalDate.of(year, monthOfYear, dayOfMonth);
-            LocalDate curDate = LocalDate.now();
-
-            return Period.between(birthDate, curDate).getYears();
+            // API Level 26 (Oreo) and above
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                LocalDate birthDate = LocalDate.of(year, monthOfYear, dayOfMonth);
+                LocalDate curDate = LocalDate.now();
+                return Period.between(birthDate, curDate).getYears();
+            }
         }
         return 0;
     }
@@ -738,9 +761,11 @@ public class MainActivity extends AppCompatActivity
         idolFullIV = bottomSheetDialog.findViewById(R.id.idol_full_image_view);
         idolCroppedCard = bottomSheetDialog.findViewById(R.id.idol_cropped_card);
         idolFullCard = bottomSheetDialog.findViewById(R.id.idol_full_card);
+        cancelBtn = bottomSheetDialog.findViewById(R.id.cancel_button);
         // Card is Clicked
         idolFullCard.setOnClickListener(this);
         idolCroppedCard.setOnClickListener(this);
+        cancelBtn.setOnClickListener(this);
     }
 
     // ===========================================================================================

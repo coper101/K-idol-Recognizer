@@ -80,6 +80,7 @@
     <style name="ButtonBottomBar" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="backgroundTint">@color/space_gray</item>
         <item name="strokeColor">@color/white_600</item>
+        <item name="android:textColor">@color/white_300</item>
     </style>
 
     <!-- Progress Indicator -->
