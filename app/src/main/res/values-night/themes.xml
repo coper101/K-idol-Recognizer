@@ -73,7 +73,7 @@
 
     <!-- Button -->
     <style name="ButtonHint" parent="Widget.MaterialComponents.Button.UnelevatedButton">
-        <item name="android:background">@drawable/draggable_hint</item>
+        <item name="android:background">@drawable/draggable_hint_shape</item>
         <item name="backgroundTint">@color/white_400_A80</item>
     </style>
 

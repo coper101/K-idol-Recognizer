@@ -93,7 +93,7 @@
 
                         <ImageView
                             android:id="@+id/face_image_view"
-                            android:src="@drawable/ic_recognize_illustration_02"
+                            android:src="@drawable/main_start_recognizing_illustration"
                             android:layout_width="70dp"
                             android:layout_height="70dp"
                             android:scaleType="fitXY"/>
@@ -195,6 +195,7 @@
 
                     <!-- Age -->
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/age_card_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_marginStart="@dimen/padding_left_right"
@@ -213,7 +214,7 @@
                                 android:layout_height="25dp"
                                 android:layout_gravity="center"
                                 android:layout_marginEnd="8dp"
-                                android:background="@drawable/ic_hat_01_05"/>
+                                android:background="@drawable/stats_age_icon"/>
                             <TextView
                                 android:id="@+id/age_text_view"
                                 android:layout_width="wrap_content"
@@ -225,6 +226,7 @@
 
                     <!-- Height -->
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/height_card_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_marginEnd="15dp"
@@ -242,7 +244,7 @@
                                 android:layout_height="25dp"
                                 android:layout_gravity="center"
                                 android:layout_marginEnd="5dp"
-                                android:background="@drawable/ic_ruler_03"/>
+                                android:background="@drawable/stats_height_icon"/>
                             <TextView
                                 android:id="@+id/height_text_view"
                                 android:layout_width="wrap_content"
@@ -254,6 +256,7 @@
 
                     <!-- Weight -->
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/weight_card_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
@@ -272,7 +275,7 @@
                                 android:layout_height="25dp"
                                 android:layout_gravity="center"
                                 android:layout_marginEnd="8dp"
-                                android:background="@drawable/ic_weighin_scale_04"/>
+                                android:background="@drawable/stats_weight_icon"/>
                             <TextView
                                 android:id="@+id/weight_text_view"
                                 android:layout_width="wrap_content"
@@ -284,6 +287,7 @@
 
                     <!-- Blood Type -->
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/blood_type_card_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
@@ -302,7 +306,7 @@
                                 android:layout_height="25dp"
                                 android:layout_gravity="center"
                                 android:layout_marginEnd="5dp"
-                                android:background="@drawable/ic_blood_01_01"/>
+                                android:background="@drawable/stats_blood_type_icon"/>
                             <TextView
                                 android:id="@+id/blood_type_text_view"
                                 android:layout_width="wrap_content"

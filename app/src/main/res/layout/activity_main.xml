@@ -31,7 +31,7 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_gravity="center_vertical"
-            android:src="@drawable/idol_search_icon"
+            android:src="@drawable/button_recognizer_icon"
             android:background="@drawable/button_recognizer_ripple_red"
             app:layout_anchor="@id/persistent_bottom_sheet"
             android:elevation="1dp" />
@@ -60,7 +60,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:button="@drawable/fave_selector"
+                android:button="@drawable/favorite_selector"
                 app:buttonTint="@color/red_accent" />
 
             <Button

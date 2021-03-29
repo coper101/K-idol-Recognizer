@@ -13,15 +13,11 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Outline;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -55,7 +51,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.ByteArrayOutputStream;
@@ -104,7 +99,7 @@ public class MainActivity extends AppCompatActivity
             heightTV, weightTV, bloodTypeTV,
             nationalityTV, ageTV;
     private ImageView faceIV;
-    private MaterialCardView imageFaceCard;
+    private MaterialCardView imageFaceCard, ageCard, heightCard, weightCard, bloodTypeCard;
     private AppCompatImageButton recognizerBtn;
     private LinearProgressIndicator recognizerProgInd;
     private CoordinatorLayout mainView;
@@ -127,7 +122,7 @@ public class MainActivity extends AppCompatActivity
     MaterialButton cancelBtn;
 
     // Access to Module
-    PyObject pyObject;
+    PyObject mainModule;
     private Python python;
 
     // Permissions
@@ -162,12 +157,31 @@ public class MainActivity extends AppCompatActivity
             Python.start(new AndroidPlatform(this));
         }
         python = Python.getInstance();
-        pyObject = python.getModule("myScript");
 
-        // Button is Clicked
+        // Run Get Main Module on a new Thread
+        // Average Time Taken: 5, 2 seconds
+        Thread mainModuleThread = new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        long start = System.nanoTime();
+                        mainModule = python.getModule("myScript");
+                        long end = System.nanoTime();
+                        Log.e(TAG, "Time Taken to get Main Module: " + ((end - start) / 1000000000)
+                                + " seconds");
+                    }
+                }
+        );
+        mainModuleThread.start();
+
+        // Button / Card is Clicked
         recognizerBtn.setOnClickListener(this);
         saveBtn.setOnClickListener(this);
         favoriteBtn.setOnCheckedChangeListener(this);
+        ageCard.setOnClickListener(this);
+        weightCard.setOnClickListener(this);
+        heightCard.setOnClickListener(this);
+        bloodTypeCard.setOnClickListener(this);
 
         // Initialize List Adapter with Recyler View - Roles & SNS
         initListAdapter();
@@ -209,6 +223,10 @@ public class MainActivity extends AppCompatActivity
         realNameTV = findViewById(R.id.real_name_text_view);
         faceIV = findViewById(R.id.face_image_view);
         imageFaceCard = findViewById(R.id.face_image_card_view);
+        ageCard = findViewById(R.id.age_card_view);
+        heightCard = findViewById(R.id.height_card_view);
+        weightCard = findViewById(R.id.weight_card_view);
+        bloodTypeCard = findViewById(R.id.blood_type_card_view);
         groupNameTV = findViewById(R.id.group_name_text_view);
         entTV = findViewById(R.id.entertainment_text_view);
         rolesRV = findViewById(R.id.roles_recycler_view);
@@ -321,18 +339,19 @@ public class MainActivity extends AppCompatActivity
         Bitmap bitmapFrame = previewView.getBitmap();
         String encodeBitmap = encodeBitmapImage(bitmapFrame);
 
-        if (pyObject != null && encodeBitmap != null) {
+        if (mainModule != null && encodeBitmap != null) {
 
             // Get type of bitmap passed to python
-            PyObject type = pyObject.callAttr("getType", bitmapFrame);
+            PyObject type = mainModule.callAttr("getType", bitmapFrame);
             Log.e(TAG, type.toString());
 
             // Recognize Idol (Average Time to Recognize: 2 sec)
-            long start = System.currentTimeMillis();
-            PyObject stageNameAndBbox = pyObject.callAttr("detect_face_fr", encodeBitmap);
-            long end = System.currentTimeMillis();
+            long start = System.nanoTime();
+            PyObject stageNameAndBbox = mainModule.callAttr("detect_face_fr", encodeBitmap);
+            long end = System.nanoTime();
             showOrHideProgInd(false);
-            Log.e(TAG, "Time Taken to recog face: " + (end-start));
+            Log.e(TAG, "Time Taken to Recognize Face: " + ((end - start) / 1000000000) + "\n" +
+                    "Difference in Nano: " + (end - start));
 
             // Faces To Java List
             List<PyObject> stageNameAndBboxList = stageNameAndBbox.asList();
@@ -374,10 +393,12 @@ public class MainActivity extends AppCompatActivity
                 Log.e(TAG, "Cropped Bitmap: " + myData.getRecognizedIdolBitmapCrop());
 
                 // Get Idol's Profile
-                start = System.currentTimeMillis();
-                PyObject profile = pyObject.callAttr("get_idol_profile", id);
-                end = System.currentTimeMillis();
-                Log.e(TAG, "Time taken to get profile values: " + (end - start));
+                start = System.nanoTime();
+                PyObject profile = mainModule.callAttr("get_idol_profile", id);
+                end = System.nanoTime();
+                Log.e(TAG, "Time Taken to get Profile Values: " + ((end - start) / 1000000000) +
+                        " seconds" + "\n" +
+                        "Difference in Nano: " + (end - start));
                 Log.e(TAG, profile.toString());
                 Map<PyObject, PyObject> profileValues = profile.asMap();
 
@@ -457,7 +478,7 @@ public class MainActivity extends AppCompatActivity
 
     // ===========================================================================================
     // Reference: Stackoverflow
-    // Set the Text of View outside the main
+    // Touch the UI Components inside a Thread
     private void setViewValue(View view, String value){
         runOnUiThread(new Runnable() {
             @Override
@@ -508,7 +529,7 @@ public class MainActivity extends AppCompatActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                faceIV.setImageDrawable(getDrawable(R.drawable.recognizer_no_match_illustration));
+                faceIV.setImageDrawable(getDrawable(R.drawable.main_no_match_illustration));
             }
         });
     }
@@ -586,9 +607,15 @@ public class MainActivity extends AppCompatActivity
                 shuffleProgIndColors();
                 recognizerProgInd.show();
                 bottomSheetBehavior.setDraggable(false);
+                // Perform Recognition on a new Thread
+                // Average Time Taken: 2.22 seconds
+                // More Faces -> Longer Time Taken
                 Thread recognitionThread = new Thread( new Runnable() {
                     @Override public void run() {
+                        long start = System.nanoTime();
                         performRecognition();
+                        long end = System.nanoTime();
+                        Log.e(TAG, "Time Taken to Perform Recognition: " + (end - start));
                     }
                 } );
                 recognitionThread.start();
@@ -624,6 +651,18 @@ public class MainActivity extends AppCompatActivity
             case R.id.cancel_button:
                 bottomSheetDialog.dismiss();
                 break;
+            case R.id.age_card_view:
+                Toast.makeText(this, "Age", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.weight_card_view:
+                Toast.makeText(this, "Weight", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.height_card_view:
+                Toast.makeText(this, "Height", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.blood_type_card_view:
+                Toast.makeText(this, "Blood Type", Toast.LENGTH_SHORT).show();
+                break;
         }
     }
 
@@ -631,9 +670,9 @@ public class MainActivity extends AppCompatActivity
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         Log.e(TAG, "isChecked: " + isChecked);
         String id = myData.getIdol().getId();
-        if (pyObject != null) {
+        if (mainModule != null) {
             String boolVal = isChecked ? "True" : "False";
-            PyObject isUpdatedStr = pyObject.callAttr("update_favorite", id, boolVal);
+            PyObject isUpdatedStr = mainModule.callAttr("update_favorite", id, boolVal);
             boolean isUpdated = isUpdatedStr.toBoolean();
             if (isUpdated && isChecked) {
                 Toast.makeText(this, "You liked this idol", Toast.LENGTH_SHORT).show();
@@ -641,7 +680,7 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(this, "You disliked this idol", Toast.LENGTH_SHORT).show();
             }
 
-            PyObject profile = pyObject.callAttr("get_idol_profile", id);
+            PyObject profile = mainModule.callAttr("get_idol_profile", id);
             Map<PyObject, PyObject> profileValues = profile.asMap();
             String stageName = profileValues.get("Stage Name").toString();
             boolean isFavorite = profileValues.get("Favorite").toBoolean();

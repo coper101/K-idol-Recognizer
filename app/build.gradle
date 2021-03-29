@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    // Chaquopy
     id 'com.chaquo.python'
 }
 
@@ -21,6 +22,7 @@ android {
             abiFilters  "armeabi-v7a", "arm64-v8a"
         }
 
+        // Chaquopy Python Directory
         sourceSets {
             main {
                 python.srcDirs = ["src/main/python"]
@@ -31,6 +33,7 @@ android {
 //            buildPython 'C:/Users/19004731/AppData/Local/Programs/Python/Python37-32'
 //        }
 
+        // Chaquopy Python Libraries
         python {
             pip {
                 install "numpy"
