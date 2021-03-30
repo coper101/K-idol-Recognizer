@@ -7,31 +7,30 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".Activities.RecognitionActivity">
 
-    <!-- Live Camera Feed -->
-    <androidx.camera.view.PreviewView
-        android:id="@+id/viewFinder"
+    <!-- Captured Image -->
+    <ImageView
+        android:id="@+id/captured_image_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="visible"/>
+        android:layout_height="match_parent"/>
 
-    <!-- Find & Recognize Idol -->
+    <!-- Back to Camera -->
     <LinearLayout
         android:layout_width="60dp"
         android:layout_height="100dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginStart="20dp"
         android:layout_gravity="top"
-        app:layout_anchorGravity="end"
+        app:layout_anchorGravity="start"
         app:layout_anchor="@id/persistent_bottom_sheet"
         android:orientation="horizontal">
 
         <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/recognizer_button"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:id="@+id/back_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_gravity="center_vertical"
-            android:src="@drawable/button_recognizer_icon"
+            android:src="@drawable/back_icon"
             android:background="@drawable/button_recognizer_ripple_red"
             app:layout_anchor="@id/persistent_bottom_sheet"
             android:elevation="1dp" />
@@ -63,7 +62,7 @@
                 android:button="@drawable/favorite_selector"
                 app:buttonTint="@color/red_accent" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/save_button"
                 android:layout_width="0dp"
                 android:layout_height="58dp"

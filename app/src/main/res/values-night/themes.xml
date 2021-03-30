@@ -4,7 +4,7 @@
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/white</item>
         <item name="colorPrimaryVariant">@color/white</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnPrimary">@color/white_300</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
         <item name="colorSecondaryVariant">@color/teal_200</item>
@@ -93,6 +93,24 @@
     <!-- Bottom App Bar -->
     <style name="BottomAppBar" parent="Widget.MaterialComponents.BottomAppBar.Colored">
         <item name="backgroundTint">@color/space_gray</item>
+    </style>
+
+    <!-- Bottom Navigation -->
+    <style name="BottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="backgroundTint">@color/space_gray</item>
+        <item name="labelVisibilityMode">selected</item>
+        <item name="theme">@style/BottomNavTheme</item>
+        <item name="itemTextAppearanceActive">@style/BottomNavText</item>
+    </style>
+
+    <style name="BottomNavTheme" parent="Theme.KIdolRecognizer">
+        <item name="colorPrimary">@color/white_300</item>
+        <item name="colorOnSurface">@color/white_400</item>
+    </style>
+
+    <style name="BottomNavText">
+        <item name="android:textSize">12dp</item>
+        <item name="android:textFontWeight" tools:targetApi="p">200</item>
     </style>
 
 

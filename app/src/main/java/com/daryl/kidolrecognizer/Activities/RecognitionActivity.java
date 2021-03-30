@@ -1,14 +1,9 @@
-package com.daryl.kidolrecognizer;
+package com.daryl.kidolrecognizer.Activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.camera.core.CameraSelector;
-import androidx.camera.core.Preview;
-import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -37,10 +31,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chaquo.python.PyObject;
-import com.chaquo.python.Python;
-import com.chaquo.python.android.AndroidPlatform;
 import com.daryl.kidolrecognizer.Data.Idol;
 import com.daryl.kidolrecognizer.Data.MyData;
+import com.daryl.kidolrecognizer.R;
 import com.daryl.kidolrecognizer.RecyclerView.Role;
 import com.daryl.kidolrecognizer.RecyclerView.RolesListAdapterWithRecyclerView;
 import com.daryl.kidolrecognizer.RecyclerView.SNS;
@@ -51,7 +44,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
-import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -66,19 +58,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
-public class MainActivity extends AppCompatActivity
+public class RecognitionActivity extends AppCompatActivity
         implements View.OnClickListener, CompoundButton.OnCheckedChangeListener, SNSListAdapterWithRecyclerView.OnItemClickListener {
 
-    private static String TAG = MainActivity.class.getSimpleName();
-
-    // CameraX
-    private ExecutorService cameraExecutor;
-    private PreviewView previewView;
+    private static final String TAG = RecognitionActivity.class.getSimpleName();
 
     // Data
     private MyData myData;
@@ -98,9 +83,9 @@ public class MainActivity extends AppCompatActivity
             groupNameTV, entTV,
             heightTV, weightTV, bloodTypeTV,
             nationalityTV, ageTV;
-    private ImageView faceIV;
+    private ImageView faceIV, capturedIV;
     private MaterialCardView imageFaceCard, ageCard, heightCard, weightCard, bloodTypeCard;
-    private AppCompatImageButton recognizerBtn;
+    private AppCompatImageButton backBtn;
     private LinearProgressIndicator recognizerProgInd;
     private CoordinatorLayout mainView;
     private Button draggableHintBtn;
@@ -113,69 +98,32 @@ public class MainActivity extends AppCompatActivity
     // Persistent Bottom Sheet
     private LinearLayout perBottomSheet;
     private BottomSheetBehavior bottomSheetBehavior;
-    private MyBottomBehavior myBottomBehavior = new MyBottomBehavior();
+    private final MyBottomBehavior myBottomBehavior = new MyBottomBehavior();
 
     // Bottom Sheet Dialog
     private BottomSheetDialog bottomSheetDialog;
-    ImageView idolCroppedIV, idolFullIV;
-    MaterialCardView idolCroppedCard, idolFullCard;
-    MaterialButton cancelBtn;
+    private ImageView idolCroppedIV, idolFullIV;
+    private MaterialCardView idolCroppedCard, idolFullCard;
+    private MaterialButton cancelBtn;
 
     // Access to Module
-    PyObject mainModule;
-    private Python python;
-
-    // Permissions
-    private final int REQUEST_CODE_PERMISSIONS = 101;
-    private final String[] REQUIRED_PERMISSIONS = new String[]{
-            "android.permission.CAMERA"
-    };
+    private PyObject mainModule;
 
     // ===========================================================================================
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        // Request Camera Permission If Not Granted
-        if (allPermissionsGranted()) {
-            startCamera();
-        } else {
-            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
-        }
-
-        cameraExecutor = Executors.newSingleThreadExecutor();
+        setContentView(R.layout.activity_recognition);
 
         // Data
         myData = MyData.getMyData();
+        mainModule = myData.getMainModule();
 
         // Initialize Views
         initViews();
 
-        // Check Python is Started
-        if (! Python.isStarted()) {
-            Python.start(new AndroidPlatform(this));
-        }
-        python = Python.getInstance();
-
-        // Run Get Main Module on a new Thread
-        // Average Time Taken: 5, 2 seconds
-        Thread mainModuleThread = new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        long start = System.nanoTime();
-                        mainModule = python.getModule("myScript");
-                        long end = System.nanoTime();
-                        Log.e(TAG, "Time Taken to get Main Module: " + ((end - start) / 1000000000)
-                                + " seconds");
-                    }
-                }
-        );
-        mainModuleThread.start();
-
         // Button / Card is Clicked
-        recognizerBtn.setOnClickListener(this);
+        backBtn.setOnClickListener(this);
         saveBtn.setOnClickListener(this);
         favoriteBtn.setOnCheckedChangeListener(this);
         ageCard.setOnClickListener(this);
@@ -203,15 +151,40 @@ public class MainActivity extends AppCompatActivity
         // Initialize Bottom Sheet Dialog
         initModalBottomSheet();
 
-    } // <--- end of onCreate --->
+        // Perform Recognition
+        if (mainModule == null) {
+            Log.e(TAG, "Main Module is null");
+        } else {
+            Log.e(TAG, "Main Module is NOT null");
+            Bitmap bitmapFull = myData.getRecognizedIdolBitmapFull();
+            capturedIV.setImageBitmap(bitmapFull);
+            shuffleRecogBtnRippleColor();
+            shuffleProgIndColors();
+            recognizerProgInd.show();
+            Thread recognitionThread = new Thread(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            long start = System.nanoTime();
+                            performRecognition();
+                            long end = System.nanoTime();
+                            Log.e(TAG, "Time Taken for Recognition: " +
+                                    (end - start) * 1000000000);
+                            showOrHideProgInd(false);
+                        }
+                    }
+            );
+            recognitionThread.start();
+        }
+
+    } // <-- end of onCreate -->
 
 
     // ===========================================================================================
     private void initViews() {
-        // CameraX
-        previewView = findViewById(R.id.viewFinder);
         // Recognizer
-        recognizerBtn = findViewById(R.id.recognizer_button);
+        capturedIV = findViewById(R.id.captured_image_view);
+        backBtn = findViewById(R.id.back_button);
         recognizerProgInd = findViewById(R.id.recognizer_progress_indicator);
         // Persistent Bottom Sheet
         perBottomSheet = findViewById(R.id.persistent_bottom_sheet);
@@ -244,86 +217,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     // ===========================================================================================
-    // CameraX References:
-    // https://developer.android.com/training/camerax/architecture
-    // https://codelabs.developers.google.com/codelabs/camerax-getting-started#0
-    private void startCamera() {
-
-        // (1) Request Camera Provider
-        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
-
-        cameraProviderFuture.addListener(() -> {
-            // (2) Check Camera Provider Availability
-            ProcessCameraProvider cameraProvider = null;
-            try {
-                cameraProvider = cameraProviderFuture.get();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            // (3) Select Camera Bind Lifecycle and Uses Cases
-
-            // Use Case: Preview
-            Preview preview = new Preview.Builder().build();
-            CameraSelector cameraSelector = new CameraSelector.Builder()
-                    .requireLensFacing(CameraSelector.LENS_FACING_BACK).build();
-            preview.setSurfaceProvider(previewView.createSurfaceProvider());
-
-            try {
-                cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle(this, cameraSelector, preview);
-            } catch (Exception exc) {
-                Log.e(TAG, "Use case binding failed", exc);
-            }
-        }, ContextCompat.getMainExecutor(this));
-
-    }
-
-    // ===========================================================================================
-    private boolean allPermissionsGranted() {
-        for (String permission : REQUIRED_PERMISSIONS) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // ===========================================================================================
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            // start camera when granted
-            if (allPermissionsGranted()) {
-                startCamera();
-                // exit app when not granted
-            } else {
-                Toast.makeText(this,
-                        "Permissions not granted by the user.",
-                        Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
-    }
-
-    // ===========================================================================================
     @Override
     protected void onResume() {
         super.onResume();
         Log.e(TAG, "onResume called");
-        if (allPermissionsGranted()) {
-            startCamera();
-        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.e(TAG, "onDestroy called");
-        cameraExecutor.shutdown();
     }
 
     @Override
@@ -336,10 +239,11 @@ public class MainActivity extends AppCompatActivity
     private void performRecognition() {
 
         // Capture Image
-        Bitmap bitmapFrame = previewView.getBitmap();
-        String encodeBitmap = encodeBitmapImage(bitmapFrame);
+        Bitmap bitmapFrame = myData.getRecognizedIdolBitmapFull();
 
-        if (mainModule != null && encodeBitmap != null) {
+        if (mainModule != null && bitmapFrame != null) {
+
+            String encodeBitmap = encodeBitmapImage(bitmapFrame);
 
             // Get type of bitmap passed to python
             PyObject type = mainModule.callAttr("getType", bitmapFrame);
@@ -602,23 +506,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.recognizer_button:
-                shuffleRecogBtnRippleColor();
-                shuffleProgIndColors();
-                recognizerProgInd.show();
-                bottomSheetBehavior.setDraggable(false);
-                // Perform Recognition on a new Thread
-                // Average Time Taken: 2.22 seconds
-                // More Faces -> Longer Time Taken
-                Thread recognitionThread = new Thread( new Runnable() {
-                    @Override public void run() {
-                        long start = System.nanoTime();
-                        performRecognition();
-                        long end = System.nanoTime();
-                        Log.e(TAG, "Time Taken to Perform Recognition: " + (end - start));
-                    }
-                } );
-                recognitionThread.start();
+            case R.id.back_button:
+                finish();
                 break;
             case R.id.save_button:
                 bottomSheetDialog.show();
@@ -723,9 +612,9 @@ public class MainActivity extends AppCompatActivity
             // dd/mm/yyyy
             String[] dates =  birthDateStr.split("/");
 
-            int year = Integer.valueOf(dates[2]);
-            int monthOfYear = Integer.valueOf(dates[1]);
-            int dayOfMonth = Integer.valueOf(dates[0]);
+            int year = Integer.parseInt(dates[2]);
+            int monthOfYear = Integer.parseInt(dates[1]);
+            int dayOfMonth = Integer.parseInt(dates[0]);
 
             // API Level 26 (Oreo) and above
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -769,7 +658,7 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 if (slideOffset > 0.3) {
-                    recognizerBtn.setVisibility(View.GONE);
+                    backBtn.setVisibility(View.GONE);
                 }
             }
             // Swipping Down
@@ -783,7 +672,7 @@ public class MainActivity extends AppCompatActivity
                     getSupportActionBar().hide();
                 }
                 if (slideOffset < 0.6) {
-                    recognizerBtn.setVisibility(View.VISIBLE);
+                    backBtn.setVisibility(View.VISIBLE);
                 }
             }
             lastSlideOffSet = slideOffset;
@@ -875,8 +764,8 @@ public class MainActivity extends AppCompatActivity
         // random number from 0 - 3
         int randNum = new Random().nextInt(drawables.size());
         // Change Recognizer Button Ripple Color
-        recognizerBtn.setBackground(drawables.get(randNum));
+        backBtn.setBackground(drawables.get(randNum));
     }
 
 
-} // <---  end of MainActivity --->
+} // <--  end of RecognitionActivity Class -->

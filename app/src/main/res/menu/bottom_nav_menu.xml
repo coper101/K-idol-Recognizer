@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/recognizer_item"
+        android:icon="@drawable/button_recognizer_icon"
+        android:title="Recognize"/>
+    <item
+        android:id="@+id/collections_item"
+        android:icon="@drawable/collections_icon"
+        android:title="Collections"/>
+    <item
+        android:id="@+id/favorites_item"
+        android:icon="@drawable/favorite_filled"
+        android:title="Favorites"/>
+    <item
+        android:id="@+id/idols_item"
+        android:icon="@drawable/idols_icon"
+        android:title="Idols"/>
+</menu>

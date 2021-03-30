@@ -2,6 +2,8 @@ package com.daryl.kidolrecognizer.Data;
 
 import android.graphics.Bitmap;
 
+import com.chaquo.python.PyObject;
+
 // Singleton Pattern
 public class MyData {
 
@@ -10,6 +12,7 @@ public class MyData {
     private Bitmap recognizedIdolBitmapFull;
     private Bitmap recognizedIdolBitmapCrop;
     private Idol idol;
+    private PyObject mainModule;
 
     // Instantiation only allowed within this class
     private MyData() {}
@@ -45,5 +48,17 @@ public class MyData {
 
     public boolean isAllNotNull() {
         return idol != null && recognizedIdolBitmapCrop != null && recognizedIdolBitmapFull != null;
+    }
+
+    public static void setMyData(MyData myData) {
+        MyData.myData = myData;
+    }
+
+    public PyObject getMainModule() {
+        return mainModule;
+    }
+
+    public void setMainModule(PyObject mainModule) {
+        this.mainModule = mainModule;
     }
 }

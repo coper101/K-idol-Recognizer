@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">kIdolRecognizer</string>
 
-    <string name="stage_name">Start Recognizing</string>
-    <string name="real_name">Tap the button</string>
+    <string name="stage_name">Recognizing</string>
+    <string name="real_name"></string>
 
     <string name="group">Group</string>
     <string name="group_name">Group Name</string>
@@ -35,5 +35,7 @@
     <string name="platform_name">Platform Name</string>
     <string name="username">Username</string>
     <string name="cancel">Cancel</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>
