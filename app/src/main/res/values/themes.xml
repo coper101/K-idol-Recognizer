@@ -46,7 +46,7 @@
     </style>
 
     <!-- Card Styles -->
-    <style name="Card" parent="">
+    <style name="Card">
         <item name="cardBackgroundColor">@color/space_gray</item>
         <item name="strokeColor">@color/white_600</item>
         <item name="strokeWidth">1dp</item>
@@ -64,11 +64,18 @@
         <item name="android:gravity">center</item>
     </style>
 
-    <style name="CardImage" parent="">
+    <style name="CardImage">
         <item name="cardCornerRadius">8dp</item>
         <item name="cardBackgroundColor">@color/space_gray</item>
         <item name="strokeColor">@color/white_600</item>
         <item name="strokeWidth">0dp</item>
+    </style>
+
+    <style name="CardPlain">
+        <item name="cardBackgroundColor">@color/space_gray_dark</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="cardCornerRadius">0dp</item>
     </style>
 
     <!-- Button -->

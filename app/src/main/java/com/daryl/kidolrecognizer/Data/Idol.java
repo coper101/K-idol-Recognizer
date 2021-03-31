@@ -1,8 +1,5 @@
 package com.daryl.kidolrecognizer.Data;
 
-import com.daryl.kidolrecognizer.RecyclerView.Role;
-import com.daryl.kidolrecognizer.RecyclerView.SNS;
-
 import java.util.ArrayList;
 
 public class Idol {
@@ -30,6 +27,12 @@ public class Idol {
         this.isFavorite = isFavorite;
         this.roles = roles;
         this.snsList = snsList;
+    }
+
+    public Idol(String id, String stageName, String group) {
+        this.id = id;
+        this.stageName = stageName;
+        this.group = group;
     }
 
     public String getId() {

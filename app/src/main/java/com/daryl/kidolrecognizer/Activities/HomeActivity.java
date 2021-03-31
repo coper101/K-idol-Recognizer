@@ -12,9 +12,11 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -99,9 +101,6 @@ public class HomeActivity extends AppCompatActivity
                             ((end - start) / 1000000000)
                             + " seconds");
                     updateButtonState(true);
-                    // Save Idols CSV to Home
-                    boolean isSave = mainModule.callAttr("save_idols_data_to_home").toBoolean();
-                    Log.e(TAG, "Idols CSV is Saved: " + isSave);
                 }
             }
         );
@@ -189,7 +188,6 @@ public class HomeActivity extends AppCompatActivity
         return true;
     }
 
-    // ===========================================================================================
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -215,6 +213,25 @@ public class HomeActivity extends AppCompatActivity
         if (allPermissionsGranted()) {
             startCamera();
         }
+
+        // Persist Idols CSV Save Status
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean isCSVSaved = sp.getBoolean("Idols CSV Saved", false);
+        Log.e(TAG, "onResume: isCSVSaved? " + isCSVSaved);
+        Toast.makeText(this, "onResume: isCSVSaved? " + isCSVSaved, Toast.LENGTH_SHORT).show();
+
+        if (!isCSVSaved) {
+            if (MyData.getMyData().getMainModule() != null) {
+                // Save Idols CSV to Home
+                PyObject mainMod = MyData.getMyData().getMainModule();
+
+                boolean isSave = mainMod.callAttr("save_idols_data_to_home").toBoolean();
+                Log.e(TAG, "onResume: Idols CSV is Saved? " + isSave);
+
+                boolean success = sp.edit().putBoolean("Idols CSV Saved", isSave).commit();
+                Log.e(TAG, "onResume: Successful Commit? " + success);
+            }
+        }
     }
 
     @Override
@@ -228,6 +245,26 @@ public class HomeActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         Log.e(TAG, "onPause called");
+
+        // Persist Idols CSV Save Status
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean isCSVSaved = sp.getBoolean("Idols CSV Saved", false);
+        Log.e(TAG, "onPause: isCSVSaved? " + isCSVSaved);
+        Toast.makeText(this, "onPause: isCSVSaved? " + isCSVSaved, Toast.LENGTH_SHORT).show();
+
+        if (!isCSVSaved) {
+            if (MyData.getMyData().getMainModule() != null) {
+                // Save Idols CSV to Home
+                PyObject mainMod = MyData.getMyData().getMainModule();
+
+                boolean isSave = mainMod.callAttr("save_idols_data_to_home").toBoolean();
+                Log.e(TAG, "onPause: Idols CSV is Saved? " + isSave);
+
+                boolean success = sp.edit().putBoolean("Idols CSV Saved", isSave).commit();
+                Log.e(TAG, "onPause: Successful Commit? " + success);
+            }
+        }
+
     }
 
     // ===========================================================================================

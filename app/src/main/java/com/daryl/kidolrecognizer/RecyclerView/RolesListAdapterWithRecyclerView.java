@@ -9,11 +9,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.daryl.kidolrecognizer.Data.Role;
 import com.daryl.kidolrecognizer.R;
 
 import java.util.List;
 
-public class RolesListAdapterWithRecyclerView extends RecyclerView.Adapter<RolesListAdapterWithRecyclerView.RoleViewHolder> {
+public class RolesListAdapterWithRecyclerView
+        extends RecyclerView.Adapter<RolesListAdapterWithRecyclerView.RoleViewHolder> {
 
     private final List<Role> roles;
     private final Context context;

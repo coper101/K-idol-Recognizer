@@ -47,6 +47,8 @@ def detect_face_fr(image_data):
             # add to nested list
             idsBbox.append(temp)
 
+    print(idsBbox)
+
     return idsBbox
 
 def extractId(label):
@@ -169,13 +171,37 @@ def get_favorite_idols():
         faveFltr = data['Favorite'] == True
         idols = data.loc[faveFltr]
         # get only stage name & group name
-        idols2Cols = idols[['Stage Name', 'Group Name']]
+        idols2Cols = idols[['Id', 'Stage Name', 'Group Name']]
         # to list
         idols2ColsVal = idols2Cols.values.tolist()
 
         faveIdols = idols2ColsVal
 
+    print(faveIdols)
+
     return faveIdols
+
+
+def get_all_idols():
+
+    idolsList = []
+
+    dataFileNameUser = os.path.join(os.environ["HOME"], "Kpop_Idols_210321_CSV.csv")
+    exist = os.path.exists(dataFileNameUser)
+    print('Home CSV Exist? ', exist)
+
+    if exist:
+        # read csv
+        data = pd.read_csv(dataFileNameUser)
+        # get only stage name & group name
+        allIdols = data[['Stage Name', 'Group Name']]
+        # to list
+        allIdolsVal = allIdols.values.tolist()
+
+        idolsList = allIdolsVal
+
+    return idolsList
+
 
 
 

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    style="@style/CardPlain">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="95dp"
+            android:orientation="horizontal"
+            android:paddingHorizontal="10dp"
+            android:weightSum="5">
+
+            <!-- Idol Face Image -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.5"
+                android:gravity="center">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/idol_face_card_view"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    style="@style/CardImage">
+                    <ImageView
+                        android:id="@+id/idol_face_image_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2.5"
+                android:orientation="vertical">
+                <!-- Idol Stage Name -->
+                <TextView
+                    android:id="@+id/idol_stage_name_text_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Idol Stage Name"
+                    style="@style/Title3"
+                    android:textSize="16dp"
+                    android:layout_marginTop="17.5dp"/>
+                <!-- Idol Group Name -->
+                <TextView
+                    android:id="@+id/idol_group_name_text_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Group Name"/>
+            </LinearLayout>
+
+            <!-- Favorite Button -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center">
+                <CheckBox
+                    android:id="@+id/idol_favorite_button"
+                    android:layout_width="30dp"
+                    android:layout_height="60dp"
+                    android:gravity="center"
+                    android:layout_gravity="center"
+                    android:button="@drawable/favorite_selector"
+                    android:buttonTint="@color/red_accent"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Bottom Divider -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0.8dp"
+            android:weightSum="1">
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.3"
+                android:background="@color/space_gray_dark"/>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.7"
+                android:layout_marginRight="20dp"
+                android:background="@color/white_700_A50"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
+

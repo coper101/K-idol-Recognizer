@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.daryl.kidolrecognizer.Data.SNS;
 import com.daryl.kidolrecognizer.R;
 import com.google.android.material.card.MaterialCardView;
 
@@ -17,7 +18,8 @@ import java.util.List;
 // Reference:
 // Click An Item | Youtube: Coding In Flow
 // Understanding Recycler View | Youtube: Code Tutor
-public class SNSListAdapterWithRecyclerView extends RecyclerView.Adapter<SNSListAdapterWithRecyclerView.SNSViewHolder> {
+public class SNSListAdapterWithRecyclerView extends
+        RecyclerView.Adapter<SNSListAdapterWithRecyclerView.SNSViewHolder> {
 
     private final List<SNS> snsList;
     private final Context context;
