@@ -27,13 +27,13 @@
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/back_button"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
             android:layout_gravity="center_vertical"
             android:src="@drawable/back_icon"
+            android:tint="@color/white"
             android:background="@drawable/button_recognizer_ripple_red"
-            app:layout_anchor="@id/persistent_bottom_sheet"
-            android:elevation="1dp" />
+            app:layout_anchor="@id/persistent_bottom_sheet"/>
 
     </LinearLayout>
 
@@ -44,14 +44,15 @@
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottom_app_bar"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="80dp"
         android:layout_gravity="bottom"
         style="@style/BottomAppBar">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="58dp"
-            android:layout_marginEnd="15dp"
+            android:layout_marginEnd="30dp"
+            android:layout_marginStart="30dp"
             android:weightSum="10">
 
             <CheckBox
@@ -59,8 +60,9 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:button="@drawable/favorite_selector"
-                app:buttonTint="@color/red_accent" />
+                android:layout_marginEnd="10dp"
+                android:buttonTint="@color/white"
+                android:button="@drawable/favorite_selector"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/save_button"

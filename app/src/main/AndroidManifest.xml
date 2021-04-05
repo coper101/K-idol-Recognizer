@@ -12,9 +12,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_kidol_recognizer_v2"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_kidol_recognizer_v2_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.KIdolRecognizer">
         <activity android:name=".Activities.HomeActivity"
@@ -29,6 +29,10 @@
             android:name=".Activities.RecognitionActivity"
             android:screenOrientation="portrait">
         </activity>
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
     </application>
 
 </manifest>

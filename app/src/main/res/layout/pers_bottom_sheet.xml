@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -61,9 +59,9 @@
                     <!-- Stage Name -->
                     <TextView
                         android:id="@+id/stage_name_text_view"
+                        style="@style/Title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        style="@style/Title"
                         android:text="@string/stage_name"/>
 
                     <!-- Real Name (Korean) -->
@@ -114,7 +112,7 @@
                 android:weightSum="10">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:layout_weight="5">
@@ -135,7 +133,7 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:layout_weight="5">
@@ -199,7 +197,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_marginStart="@dimen/padding_left_right"
-                        android:layout_marginEnd="15dp"
+                        android:layout_marginEnd="@dimen/card_margin_end"
                         style="@style/Card"
                         android:clickable="true"
                         app:rippleColor="@color/blue_accent_A10">
@@ -207,8 +205,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:orientation="horizontal"
-                            android:paddingStart="15dp"
-                            android:paddingEnd="20dp">
+                            android:paddingStart="@dimen/card_padding_left_icon"
+                            android:paddingEnd="@dimen/card_padding_horizontal">
                             <ImageView
                                 android:layout_width="25dp"
                                 android:layout_height="25dp"
@@ -229,7 +227,7 @@
                         android:id="@+id/height_card_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_marginEnd="15dp"
+                        android:layout_marginEnd="@dimen/card_margin_end"
                         style="@style/Card"
                         app:rippleColor="@color/yellow_accent_A10"
                         android:clickable="true">
@@ -237,8 +235,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:orientation="horizontal"
-                            android:paddingStart="15dp"
-                            android:paddingEnd="20dp">
+                            android:paddingStart="@dimen/card_padding_left_icon"
+                            android:paddingEnd="@dimen/card_padding_horizontal">
                             <ImageView
                                 android:layout_width="25dp"
                                 android:layout_height="25dp"
@@ -260,7 +258,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:layout_marginEnd="15dp"
+                        android:layout_marginEnd="@dimen/card_margin_end"
                         style="@style/Card"
                         android:clickable="true"
                         app:rippleColor="@color/green_accent_A10">
@@ -268,8 +266,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:orientation="horizontal"
-                            android:paddingStart="15dp"
-                            android:paddingEnd="20dp">
+                            android:paddingStart="@dimen/card_padding_left_icon"
+                            android:paddingEnd="@dimen/card_padding_horizontal">
                             <ImageView
                                 android:layout_width="25dp"
                                 android:layout_height="25dp"
@@ -291,7 +289,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:layout_marginEnd="15dp"
+                        android:layout_marginEnd="@dimen/card_margin_end"
                         style="@style/Card"
                         android:clickable="true"
                         app:rippleColor="@color/red_accent_A10">
@@ -299,8 +297,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:orientation="horizontal"
-                            android:paddingStart="15dp"
-                            android:paddingEnd="20dp">
+                            android:paddingStart="@dimen/card_padding_left_icon"
+                            android:paddingEnd="@dimen/card_padding_horizontal">
                             <ImageView
                                 android:layout_width="25dp"
                                 android:layout_height="25dp"

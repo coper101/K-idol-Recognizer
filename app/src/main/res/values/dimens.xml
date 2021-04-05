@@ -6,6 +6,10 @@
     <dimen name="margin_top_cards">5dp</dimen>
     <dimen name="card_height">60dp</dimen>
     <dimen name="card_height_2">100dp</dimen>
+    <dimen name="card_margin_end">15dp</dimen>
+    <dimen name="card_padding_horizontal">20dp</dimen>
+    <dimen name="card_padding_left_icon">15dp</dimen>
+
     <!--
     Because the window insets on round devices are larger than 15dp, this padding only applies
     to square screens.

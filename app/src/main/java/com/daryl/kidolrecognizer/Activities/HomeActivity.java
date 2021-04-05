@@ -3,6 +3,8 @@ package com.daryl.kidolrecognizer.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.camera.core.Camera;
+import androidx.camera.core.CameraControl;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -15,6 +17,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -26,11 +29,12 @@ import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
 import com.daryl.kidolrecognizer.Data.MyData;
-import com.daryl.kidolrecognizer.Fragments.CollectionsFragment;
+import com.daryl.kidolrecognizer.Fragments.GalleryFragment;
 import com.daryl.kidolrecognizer.Fragments.FavoritesFragment;
 import com.daryl.kidolrecognizer.Fragments.IdolsFragment;
 import com.daryl.kidolrecognizer.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.slider.RangeSlider;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.concurrent.ExecutionException;
@@ -52,8 +56,11 @@ public class HomeActivity extends AppCompatActivity
     private BottomNavigationView bottomNav;
 
     // CameraX
+    private CameraControl cameraControl;
     private PreviewView previewView;
     private ExecutorService cameraExecutor;
+
+    private RangeSlider zoomSlider;
 
     // Permissions
     private final int REQUEST_CODE_PERMISSIONS = 101;
@@ -106,6 +113,14 @@ public class HomeActivity extends AppCompatActivity
         );
         mainModuleThread.start();
 
+        zoomSlider.addOnChangeListener(new RangeSlider.OnChangeListener() {
+            @Override
+            public void onValueChange(@NonNull RangeSlider slider, float value, boolean fromUser) {
+                Log.e(TAG, "Slider Value: " + value);
+                zoom(value);
+            }
+        });
+
     } // <-- end of onCreate -->
 
 
@@ -118,6 +133,8 @@ public class HomeActivity extends AppCompatActivity
 
         bottomNav = findViewById(R.id.bottom_nav_view);
         bottomNav.setSelectedItemId(R.id.recognizer_item);
+
+        zoomSlider = findViewById(R.id.zoom_slider);
     }
 
     // ===========================================================================================
@@ -170,7 +187,8 @@ public class HomeActivity extends AppCompatActivity
 
             try {
                 cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle(this, cameraSelector, preview);
+                Camera camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview);
+                cameraControl = camera.getCameraControl();
             } catch (Exception exc) {
                 Log.e(TAG, "Use case binding failed", exc);
             }
@@ -212,6 +230,17 @@ public class HomeActivity extends AppCompatActivity
         Log.e(TAG, "onResume called");
         if (allPermissionsGranted()) {
             startCamera();
+            // Update Last Zoom Value
+            if (MyData.getMyData().getMainModule() != null) {
+                float lastZoomValue = MyData.getMyData().getLastZoomValue();
+                Log.e(TAG, "Last Zoom Value: " + lastZoomValue);
+                if (lastZoomValue == -1.0f) {
+                    Log.e(TAG, "Last Zoom Not Set");
+                } else {
+                    Log.e(TAG, "Last Zoom Set");
+                    zoom(lastZoomValue);
+                }
+            }
         }
 
         // Persist Idols CSV Save Status
@@ -232,6 +261,7 @@ public class HomeActivity extends AppCompatActivity
                 Log.e(TAG, "onResume: Successful Commit? " + success);
             }
         }
+
     }
 
     @Override
@@ -274,8 +304,7 @@ public class HomeActivity extends AppCompatActivity
         Fragment selectedFragment = null;
         switch (item.getItemId()) {
             case R.id.collections_item:
-                selectedFragment = new CollectionsFragment();
-
+                selectedFragment = new GalleryFragment();
                 break;
             case R.id.favorites_item:
                 selectedFragment = new FavoritesFragment();
@@ -296,6 +325,11 @@ public class HomeActivity extends AppCompatActivity
                         .commit();
             }
             recognizerBtn.setVisibility(View.VISIBLE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                getWindow().setStatusBarColor(getResources().getColor(R.color.transparent, this.getTheme()));
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
+            }
         }
         // Replace to Collections or Favorites Fragment
         else {
@@ -304,9 +338,24 @@ public class HomeActivity extends AppCompatActivity
                     .replace(R.id.fragment_container, selectedFragment)
                     .commit();
             recognizerBtn.setVisibility(View.GONE);
+            // Status Bar
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                getWindow().setStatusBarColor(getResources().getColor(R.color.space_gray_light_2, this.getTheme()));
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getWindow().setStatusBarColor(getResources().getColor(R.color.space_gray_light_2));
+            }
         }
         return true;
     }
 
+    // ===========================================================================================
+
+    private void zoom(float percentageInDeci) {
+        if (cameraControl != null) {
+            Log.e(TAG, "Camera Control is NOT null\nZoom Value: " + percentageInDeci);
+            myData.setLastZoomValue(percentageInDeci);
+            cameraControl.setLinearZoom(percentageInDeci);
+        }
+    }
 
 } // <-- end of HomeActivity Class -->

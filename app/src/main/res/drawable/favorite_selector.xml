@@ -2,9 +2,9 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:state_checked="false"
-        android:drawable="@drawable/favorite_outlined" />
+        android:drawable="@drawable/favorite_outlined_thin"/>
     <item
         android:state_checked="true"
-        android:drawable="@drawable/favorite_filled"/>
-    <item android:drawable="@drawable/favorite_outlined" />
+        android:drawable="@drawable/favorite_filled_thin"/>
+    <item android:drawable="@drawable/favorite_outlined_thin" />
 </selector>

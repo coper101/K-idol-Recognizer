@@ -5,29 +5,50 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingTop="20dp"
-    android:paddingHorizontal="25dp"
-    android:paddingBottom="20dp"
-    android:background="@color/space_gray"
+    android:paddingTop="25dp"
+    android:paddingBottom="25dp"
+    android:background="@color/space_gray_light"
     android:weightSum="2">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        style="@style/ModalTitle"
-        android:text="@string/save_to_gallery"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="25dp"
+        android:weightSum="10">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.5"
+            android:layout_gravity="center"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="7"
+            android:gravity="center"
+            android:layout_gravity="center"
+            style="@style/ModalTitle"
+            android:text="@string/save_to_gallery"/>
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/cancel_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.5"
+            android:layout_gravity="center"
+            style="@style/ModalCloseButton"
+            android:padding="0dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="34dp"
+        android:paddingHorizontal="50dp"
         android:orientation="horizontal">
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="250dp"
-            android:padding="10dp"
+            android:layout_height="260dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -50,11 +71,12 @@
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="250dp"
+            android:layout_height="match_parent"
             android:padding="10dp"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
+            android:gravity="center"
+            android:layout_gravity="center">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/idol_cropped_card"
@@ -82,12 +104,13 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:weightSum="2">
+        android:weightSum="2"
+        android:paddingVertical="21dp"
+        android:paddingHorizontal="35dp">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:padding="5dp"
             android:layout_weight="1"
             android:text="@string/original"
             android:gravity="center"
@@ -96,21 +119,11 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:padding="5dp"
             android:layout_weight="1"
             android:text="@string/cropped"
             android:gravity="center"
             style="@style/ModalLabel"/>
 
     </LinearLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/cancel_button"
-        android:layout_width="wrap_content"
-        android:layout_height="58dp"
-        android:layout_marginTop="15dp"
-        style="@style/ButtonBottomBar"
-        android:text="@string/cancel"
-        android:layout_gravity="end" />
 
 </LinearLayout>

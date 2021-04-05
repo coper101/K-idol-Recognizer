@@ -4,8 +4,7 @@
     android:orientation="vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    style="@style/Card"
-    android:layout_marginEnd="15dp">
+    android:layout_marginEnd="@dimen/card_margin_end">
 
     <TextView
         android:id="@+id/platform_text_view"
@@ -19,7 +18,7 @@
         android:id="@+id/username_card_view"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/card_height"
-        style="@style/Card"
+        style="@style/CardOutline"
         android:clickable="true"
         app:rippleColor="@color/red_accent_A10">
 
@@ -27,8 +26,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:paddingLeft="15dp"
-            android:paddingEnd="20dp">
+            android:paddingLeft="@dimen/card_padding_left_icon"
+            android:paddingEnd="@dimen/card_padding_horizontal">
 
             <ImageView
                 android:layout_width="25dp"

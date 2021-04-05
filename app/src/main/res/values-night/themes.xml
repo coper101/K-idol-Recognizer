@@ -11,47 +11,57 @@
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">@android:color/transparent</item>
+
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="fontFamily">@font/poppins</item>
     </style>
 
     <!-- Text Styles -->
     <style name="Title" parent="TextAppearance.MaterialComponents.Headline5">
-        <item name="android:textFontWeight" tools:targetApi="p">400</item>
         <item name="android:textColor">@color/white_300</item>
+        <item name="android:fontFamily">@font/poppins_medium</item>
+        <item name="fontFamily">@font/poppins_medium</item>
+        <item name="android:includeFontPadding">false</item>
     </style>
 
     <style name="Title2" parent="Title">
-        <item name="android:textFontWeight" tools:targetApi="p">300</item>
         <item name="android:textSize">20dp</item>
+        <item name="android:fontFamily">@font/poppins_light</item>
+        <item name="fontFamily">@font/poppins_light</item>
     </style>
 
     <style name="Title3" parent="Title">
         <item name="android:textSize">18dp</item>
         <item name="android:textColor">@color/white_300</item>
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="fontFamily">@font/poppins</item>
     </style>
 
     <style name="Header" parent="Title">
         <item name="android:textSize">15dp</item>
         <item name="android:textColor">@color/white_500</item>
+        <item name="android:fontFamily">@font/poppins_light</item>
+        <item name="fontFamily">@font/poppins_light</item>
     </style>
 
     <style name="ModalTitle" parent="Title">
-        <item name="android:textSize">21dp</item>
-        <item name="android:textFontWeight" tools:targetApi="p">300</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">@color/white_A90</item>
+        <item name="android:fontFamily">@font/poppins_light</item>
+        <item name="fontFamily">@font/poppins_light</item>
     </style>
 
-    <style name="ModalLabel" parent="Title">
-        <item name="android:textSize">15dp</item>
-        <item name="android:textFontWeight" tools:targetApi="p">350</item>
-        <item name="android:textColor">@color/white_400</item>
+    <style name="ModalLabel" parent="ModalTitle">
+        <item name="android:textSize">16sp</item>
     </style>
 
     <!-- Card Styles -->
-    <style name="Card" parent="">
-        <item name="cardBackgroundColor">@color/space_gray</item>
-        <item name="strokeColor">@color/white_600</item>
+    <style name="Card">
+        <item name="cardBackgroundColor">@color/blue_light_A10</item>
+        <item name="strokeColor">@color/blue_light_A20</item>
         <item name="strokeWidth">1dp</item>
         <item name="cardElevation">0dp</item>
-        <item name="cardCornerRadius">5dp</item>
+        <item name="cardCornerRadius">10dp</item>
     </style>
 
     <style name="CardEmpty" parent="Card">
@@ -65,21 +75,31 @@
     </style>
 
     <style name="CardImage" parent="">
-        <item name="cardCornerRadius">8dp</item>
-        <item name="cardBackgroundColor">@color/space_gray</item>
+        <item name="cardCornerRadius">10dp</item>
+        <item name="cardBackgroundColor">@color/space_gray_light</item>
         <item name="strokeColor">@color/white_600</item>
         <item name="strokeWidth">0dp</item>
+    </style>
+
+    <style name="CardOutline" parent="Card">
+        <item name="cardBackgroundColor">@color/space_gray_light</item>
     </style>
 
     <!-- Button -->
     <style name="ButtonHint" parent="Widget.MaterialComponents.Button.UnelevatedButton">
         <item name="android:background">@drawable/draggable_hint_shape</item>
-        <item name="backgroundTint">@color/white_400_A80</item>
     </style>
 
     <style name="ButtonBottomBar" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="backgroundTint">@color/space_gray</item>
-        <item name="strokeColor">@color/white_600</item>
+        <item name="cornerRadius">7dp</item>
+        <item name="strokeColor">@color/space_gray_light</item>
+    </style>
+
+    <style name="ModalCloseButton">
+        <item name="tint">@color/white_A90</item>
+        <item name="backgroundTint">@color/transparent</item>
+        <item name="srcCompat">@drawable/close_icon</item>
     </style>
 
     <!-- Progress Indicator -->
@@ -93,14 +113,16 @@
     <!-- Bottom App Bar -->
     <style name="BottomAppBar" parent="Widget.MaterialComponents.BottomAppBar.Colored">
         <item name="backgroundTint">@color/space_gray</item>
+        <item name="elevation">0dp</item>
     </style>
 
     <!-- Bottom Navigation -->
     <style name="BottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
-        <item name="backgroundTint">@color/space_gray</item>
-        <item name="labelVisibilityMode">selected</item>
+        <item name="labelVisibilityMode">unlabeled</item>
         <item name="theme">@style/BottomNavTheme</item>
         <item name="itemTextAppearanceActive">@style/BottomNavText</item>
+        <item name="itemRippleColor">@null</item>
+        <item name="elevation">0dp</item>
     </style>
 
     <style name="BottomNavTheme" parent="Theme.KIdolRecognizer">
@@ -113,6 +135,23 @@
         <item name="android:textFontWeight" tools:targetApi="p">200</item>
     </style>
 
-
+    <!-- Slider -->
+    <style name="RangeSlider">
+        <item name="android:valueFrom">0.0</item>
+        <item name="android:valueTo">1.0</item>
+        <item name="values">@array/initial_zoom_value</item>
+        <item name="android:stepSize">0.1</item>
+        <item name="trackColorActive">@color/transparent</item>
+        <item name="trackColorInactive">@color/transparent</item>
+        <item name="trackColor">@color/white_A30</item>
+        <item name="trackHeight">1.5dp</item>
+        <item name="thumbRadius">15dp</item>
+        <item name="thumbColor">@color/white</item>
+        <item name="haloRadius">0dp</item>
+        <item name="thumbStrokeColor">@color/blue_light_A10</item>
+        <item name="thumbStrokeWidth">1.5dp</item>
+        <item name="thumbElevation">0dp</item>
+        <item name="tickVisible">false</item>
+    </style>
 
 </resources>

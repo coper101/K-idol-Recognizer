@@ -4,7 +4,7 @@
     android:layout_height="@dimen/card_height"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/Card"
-    android:layout_marginEnd="15dp">
+    android:layout_marginEnd="@dimen/card_margin_end">
 
     <TextView
         android:id="@+id/role_text_view"
@@ -14,6 +14,6 @@
         android:text="@string/role_name"
         android:gravity="center"
         android:layout_gravity="center"
-        android:paddingHorizontal="30dp"/>
+        android:paddingHorizontal="@dimen/card_padding_horizontal"/>
 
 </com.google.android.material.card.MaterialCardView>

@@ -9,18 +9,27 @@
     <color name="white">#FFFFFFFF</color>
 
     <!-- My Colors -->
+    <color name="space_gray_light">#495561</color>
+    <color name="space_gray_light_2">#3A434C</color>
     <color name="space_gray">#343D46</color>
     <color name="space_gray_dark">#303840</color>
+
+    <color name="blue_light_A20">#33738699</color>
+    <color name="blue_light_A30">#4D738699</color>
+    <color name="blue_light_A10">#1A738699</color>
 
     <color name="white_200">#EEEEEE</color>
     <color name="white_300">#E0E0E0</color>
     <color name="white_400">#BDBDBD</color>
+    <color name="white_400_A80">#99BDBDBD</color>
     <color name="white_500">#9E9E9E</color>
     <color name="white_600">#757575</color>
     <color name="white_700_A50">#66616161</color>
     <color name="white_800">#424242</color>
 
-    <color name="white_400_A80">#99BDBDBD</color>
+    <color name="white_A20">#33FFFFFF</color>
+    <color name="white_A30">#4DFFFFFF</color>
+    <color name="white_A90">#E6FFFFFF</color>
 
     <color name="transparent">#00000000</color>
     

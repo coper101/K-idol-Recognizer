@@ -1,32 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/space_gray_dark"
-    android:gravity="center"
-    android:weightSum="10">
+    android:background="@color/space_gray_light">
 
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="20dp">
-
+        android:layout_height="80dp"
+        android:paddingLeft="14dp"
+        android:background="@color/space_gray"
+        app:elevation="0dp">
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="My Favorite Idols"
+            android:layout_height="match_parent"
+            android:text="@string/my_favorites"
             style="@style/Title"
-            android:textColor="@color/white_400"/>
+            android:textSize="30sp"
+            android:textColor="@color/white_400"
+            android:gravity="center|start"/>
+    </com.google.android.material.appbar.AppBarLayout>
 
-    </LinearLayout>
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:layout_weight="1"-->
+<!--        android:padding="20dp">-->
+
+<!--        <TextView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="My Favorite Idols"-->
+<!--            style="@style/Title"-->
+<!--            android:textColor="@color/white_400"/>-->
+
+<!--    </LinearLayout>-->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/favorite_idols_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="9"/>
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>

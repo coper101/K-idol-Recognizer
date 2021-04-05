@@ -3,8 +3,10 @@ package com.daryl.kidolrecognizer.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.AppCompatTextView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.TextViewCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -78,7 +80,7 @@ public class RecognitionActivity extends AppCompatActivity
     private RecyclerView snsRV;
 
     // Views
-    private TextView
+     private TextView
             stageNameTV, realNameTV,
             groupNameTV, entTV,
             heightTV, weightTV, bloodTypeTV,
@@ -104,7 +106,7 @@ public class RecognitionActivity extends AppCompatActivity
     private BottomSheetDialog bottomSheetDialog;
     private ImageView idolCroppedIV, idolFullIV;
     private MaterialCardView idolCroppedCard, idolFullCard;
-    private MaterialButton cancelBtn;
+    private AppCompatImageButton cancelBtn;
 
     // Access to Module
     private PyObject mainModule;
@@ -345,7 +347,7 @@ public class RecognitionActivity extends AppCompatActivity
                     String weight = profileValues.get("Weight").toString() + " kg";
                     setViewValue(weightTV, weight);
                     String blood_type = profileValues.get("Blood Type").toString();
-                    setViewValue(bloodTypeTV, blood_type);
+                    setViewValue(bloodTypeTV, "Type " + blood_type);
 
                     // Nationality
                     String nationality = profileValues.get("Nationality").toString();
@@ -461,6 +463,10 @@ public class RecognitionActivity extends AppCompatActivity
             @Override
             public void run() {
                 favoriteBtn.setChecked(isFave);
+                if (isFave)
+                    favoriteBtn.setButtonTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.red_accent));
+                else
+                    favoriteBtn.setButtonTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.white));
             }
         });
     }
@@ -565,8 +571,10 @@ public class RecognitionActivity extends AppCompatActivity
             boolean isUpdated = isUpdatedStr.toBoolean();
             if (isUpdated && isChecked) {
                 Toast.makeText(this, "You liked this idol", Toast.LENGTH_SHORT).show();
+                favoriteBtn.setButtonTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.red_accent));
             } else if (isUpdated && !isChecked) {
                 Toast.makeText(this, "You disliked this idol", Toast.LENGTH_SHORT).show();
+                favoriteBtn.setButtonTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.white));
             }
 
             PyObject profile = mainModule.callAttr("get_idol_profile", id);
@@ -574,6 +582,7 @@ public class RecognitionActivity extends AppCompatActivity
             String stageName = profileValues.get("Stage Name").toString();
             boolean isFavorite = profileValues.get("Favorite").toBoolean();
             Toast.makeText(this, stageName + " " + isFavorite, Toast.LENGTH_SHORT).show();
+
 
             // Update Data Idol
             myData.getIdol().setFavorite(isFavorite);
@@ -651,7 +660,7 @@ public class RecognitionActivity extends AppCompatActivity
                 if (slideOffset > 0.99f) {
                     getWindow().setStatusBarColor(getColor(R.color.space_gray));
                     perBottomSheet.setBackground(getDrawable(R.drawable.pers_bottom_sheet_bg_expanded));
-                    draggableHintBtn.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.space_gray));
+                    draggableHintBtn.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.space_gray_light));
                 }
                 if (slideOffset > 0.5) {
                     getSupportActionBar().show();
@@ -766,6 +775,7 @@ public class RecognitionActivity extends AppCompatActivity
         // Change Recognizer Button Ripple Color
         backBtn.setBackground(drawables.get(randNum));
     }
+
 
 
 } // <--  end of RecognitionActivity Class -->

@@ -13,6 +13,7 @@ public class MyData {
     private Bitmap recognizedIdolBitmapCrop;
     private Idol idol;
     private PyObject mainModule;
+    private float lastZoomValue = -1.0f;
 
     // Instantiation only allowed within this class
     private MyData() {}
@@ -60,5 +61,13 @@ public class MyData {
 
     public void setMainModule(PyObject mainModule) {
         this.mainModule = mainModule;
+    }
+
+    public float getLastZoomValue() {
+        return lastZoomValue;
+    }
+
+    public void setLastZoomValue(float lastZoomValue) {
+        this.lastZoomValue = lastZoomValue;
     }
 }
