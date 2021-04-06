@@ -6,9 +6,10 @@
     android:layout_height="match_parent"
     android:background="@color/space_gray_light">
 
+    <!-- Top App Bar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="@dimen/app_bar_height"
         android:paddingLeft="14dp"
         android:background="@color/space_gray"
         app:elevation="0dp">
@@ -17,29 +18,105 @@
             android:layout_height="match_parent"
             android:text="@string/my_favorites"
             style="@style/Title"
-            android:textSize="30sp"
+            android:textSize="@dimen/app_bar_text_size"
             android:textColor="@color/white_400"
             android:gravity="center|start"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-<!--    <LinearLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:layout_weight="1"-->
-<!--        android:padding="20dp">-->
-
-<!--        <TextView-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="My Favorite Idols"-->
-<!--            style="@style/Title"-->
-<!--            android:textColor="@color/white_400"/>-->
-
-<!--    </LinearLayout>-->
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/favorite_idols_recycler_view"
+    <!-- Rearrange Button -->
+    <LinearLayout
+        android:id="@+id/rearrange_box"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="69dp"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/blue_light_A20"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="14dp"
+            android:gravity="end|center">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/rearrange_button"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:text="@string/rearrange"
+                style="@style/ButtonOutline"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/blue_light_A20"/>
+
+    </LinearLayout>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/favorite_idols_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:overScrollMode="never"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/gallery_link_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="38dp"
+                android:text="View My Gallery"
+                android:paddingVertical="15dp"
+                android:paddingHorizontal="30dp"
+                android:layout_gravity="center"
+                app:elevation="0dp"
+                android:outlineProvider="none"
+                android:textAllCaps="false"
+                app:icon="@drawable/nav_item_gallery_icon_outlined_small"
+                android:textColor="@color/yellow_accent"
+                app:iconTint="@color/yellow_accent"
+                android:fontFamily="@font/poppins_light"
+                android:background="@drawable/favorite_button_gallery_link_selector"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/empty_favorites_illustration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="80dp"
+            android:gravity="center"
+            android:layout_gravity="center">
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/favorite_finger_heart_illustration"
+                android:background="@color/transparent"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="5dp"
+                android:text="Favorite Idols"
+                style="@style/EmptyTitle"/>
+
+        </LinearLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </LinearLayout>

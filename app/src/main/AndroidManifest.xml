@@ -3,11 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.daryl.kidolrecognizer">
 
+    <!-- CameraX-->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Saving Photos -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- API Level 28 (Pie) & Lower -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
+    <!-- Firebase -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1010808606495",
+    "project_id": "kidolrecognizer",
+    "storage_bucket": "kidolrecognizer.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1010808606495:android:cc722526d83d0ccaddea2a",
+        "android_client_info": {
+          "package_name": "com.daryl.kidolrecognizer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1010808606495-ngeqbmn5o8i3dqvr7olkffgp0pt5g897.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDm2pAWOVrysmegUllAG-M9htpn5RBGABc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1010808606495-ngeqbmn5o8i3dqvr7olkffgp0pt5g897.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

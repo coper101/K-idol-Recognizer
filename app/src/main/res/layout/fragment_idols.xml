@@ -6,9 +6,10 @@
     android:layout_height="match_parent"
     android:background="@color/space_gray_light">
 
+    <!-- Top App Bar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="@dimen/app_bar_height"
         android:paddingLeft="14dp"
         android:background="@color/space_gray"
         app:elevation="0dp">
@@ -17,16 +18,68 @@
             android:layout_height="match_parent"
             android:text="@string/explore"
             style="@style/Title"
-            android:textSize="30sp"
+            android:textSize="@dimen/app_bar_text_size"
             android:textColor="@color/white_400"
             android:gravity="center|start"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <TextView
-        android:id="@+id/idols_text_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Idols"
-        android:textColor="@color/white_300"/>
+    <!-- Search Bar, Filters, Quick Filter Chips -->
+    <LinearLayout
+        android:id="@+id/rearrange_box"
+        android:layout_width="match_parent"
+        android:layout_height="69dp"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/blue_light_A20"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="66dp"
+            android:paddingHorizontal="14dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:weightSum="10">
+
+            <EditText
+                android:id="@+id/search_idols_edit_text"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="7"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/idols_search_selector"
+                android:fontFamily="@font/poppins_light"
+                android:gravity="center|start"
+                android:inputType="text"
+                android:maxLines="1"
+                android:paddingLeft="15dp"
+                android:hint="Search Idols"
+                android:textColorHint="@color/white_200_A50"
+                android:textSize="12sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/filter_button"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="3"
+                android:text="Filters"
+                style="@style/ButtonOutline"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="1dp"
+            android:background="@color/blue_light_A20"/>
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/idols_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 </LinearLayout>

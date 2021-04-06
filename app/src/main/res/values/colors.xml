@@ -14,11 +14,13 @@
     <color name="space_gray">#343D46</color>
     <color name="space_gray_dark">#303840</color>
 
+    <color name="blue_light_A10">#1A738699</color>
     <color name="blue_light_A20">#33738699</color>
     <color name="blue_light_A30">#4D738699</color>
-    <color name="blue_light_A10">#1A738699</color>
+    <color name="blue_light_A50">#80738699</color>
 
     <color name="white_200">#EEEEEE</color>
+    <color name="white_200_A50">#80EEEEEE</color>
     <color name="white_300">#E0E0E0</color>
     <color name="white_400">#BDBDBD</color>
     <color name="white_400_A80">#99BDBDBD</color>
@@ -43,8 +45,6 @@
     <color name="yellow_accent_A10">#1AFFFC6B</color>
     <color name="blue_accent_A10">#1A47DFFF</color>
 
-
-
-
+    <color name="yellow_accent_A2">#05FFFC6B</color>
 
 </resources>

@@ -1,21 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    android:id="@+id/idol_fave_item_view"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:clickable="true"
+    android:orientation="horizontal"
+    android:weightSum="10"
+    android:paddingStart="10dp"
+    android:paddingVertical="10dp"
+    android:paddingEnd="14dp"
+    android:background="@color/space_gray_light"
     style="@style/CardPlain">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+    <TextView
+        android:id="@+id/idol_ranking"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="2"
+        android:gravity="center"
+        android:text="#"
+        style="@style/RankTitle"/>
+
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="14dp"
+        android:layout_weight="8"
+        android:clickable="true"
+        android:backgroundTint="@color/transparent"
+        style="@style/CardOutline">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="95dp"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:paddingHorizontal="10dp"
+            android:paddingVertical="15dp"
             android:weightSum="5">
 
             <!-- Idol Face Image -->
@@ -23,16 +45,18 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1.5"
-                android:gravity="center">
+                android:gravity="center"
+                android:backgroundTint="@color/transparent">
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/idol_face_card_view"
+                    style="@style/CardImage"
                     android:layout_width="60dp"
                     android:layout_height="60dp"
-                    style="@style/CardImage">
+                    android:outlineProvider="none">
                     <ImageView
                         android:id="@+id/idol_face_image_view"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"/>
+                        android:layout_height="match_parent" />
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
@@ -46,17 +70,16 @@
                     android:id="@+id/idol_stage_name_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    style="@style/CardTitle"
                     android:text="Idol Stage Name"
-                    style="@style/Title3"
-                    android:textSize="16dp"
-                    android:layout_marginTop="17.5dp"/>
+                    android:textSize="16dp"/>
                 <!-- Idol Group Name -->
                 <TextView
                     android:id="@+id/idol_group_name_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Group Name"/>
+                    style="@style/CardSubtitle"
+                    android:text="Group Name" />
             </LinearLayout>
 
             <!-- Favorite Button -->
@@ -64,38 +87,22 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center">
+                android:paddingEnd="5dp"
+                android:gravity="end">
+
                 <CheckBox
                     android:id="@+id/idol_favorite_button"
                     android:layout_width="30dp"
-                    android:layout_height="60dp"
-                    android:gravity="center"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:button="@drawable/favorite_selector"
-                    android:buttonTint="@color/red_accent"/>
+                    android:button="@drawable/favorite_filled_thin"
+                    android:buttonTint="@color/red_accent"
+                    android:gravity="center" />
             </LinearLayout>
 
         </LinearLayout>
 
-        <!-- Bottom Divider -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0.8dp"
-            android:weightSum="1">
-            <View
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.3"
-                android:background="@color/space_gray_dark"/>
-            <View
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.7"
-                android:layout_marginRight="20dp"
-                android:background="@color/white_700_A50"/>
-        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-    </LinearLayout>
-
-</com.google.android.material.card.MaterialCardView>
+</LinearLayout>
 

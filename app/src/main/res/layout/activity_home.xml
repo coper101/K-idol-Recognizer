@@ -46,19 +46,92 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <!-- Bottom Nav Items -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_nav_view"
+<!--    &lt;!&ndash; Bottom Nav Items &ndash;&gt;-->
+<!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->
+<!--        android:id="@+id/bottom_nav_view"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:paddingHorizontal="2dp"-->
+<!--        android:layout_marginVertical="15dp"-->
+<!--        android:layout_marginHorizontal="25dp"-->
+<!--        android:layout_gravity="bottom"-->
+<!--        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"-->
+<!--        app:menu="@menu/bottom_nav_menu"-->
+<!--        android:background="@drawable/bottom_nav_bg"-->
+<!--        style="@style/BottomNav"/>-->
+
+    <!-- Custom Bottom Navigation -->
+    <LinearLayout
+        android:id="@+id/custom_bottom_navigation"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingVertical="2dp"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="7dp"
         android:layout_marginVertical="15dp"
-        android:layout_marginHorizontal="25dp"
-        android:layout_gravity="bottom"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
-        app:menu="@menu/bottom_nav_menu"
+        android:layout_marginHorizontal="53dp"
         android:background="@drawable/bottom_nav_bg"
-        style="@style/BottomNav"/>
+        android:weightSum="4"
+        android:gravity="center"
+        android:layout_gravity="bottom"
+        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior">
+        <LinearLayout
+            android:id="@+id/recognizer_nav_item"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_weight="1"
+            android:background="@drawable/bottom_nav_item_bg_blue">
+            <ImageView
+                android:id="@+id/recognizer_nav_item_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/nav_item_recognizer_icon_filled"
+                android:padding="9dp"
+                android:layout_gravity="center"
+                app:tint="@color/blue_accent"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/gallery_nav_item"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_weight="1">
+            <ImageView
+                android:id="@+id/gallery_nav_item_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/nav_item_gallery_icon_outlined"
+                android:padding="12dp"
+                android:layout_gravity="center"
+                app:tint="@color/blue_light_A50"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/favorite_nav_item"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_weight="1">
+            <ImageView
+                android:id="@+id/favorite_nav_item_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/nav_item_heart_icon_outlined"
+                android:padding="12dp"
+                android:layout_gravity="center"
+                app:tint="@color/blue_light_A50"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/idols_nav_item"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_weight="1">
+            <ImageView
+                android:id="@+id/idols_nav_item_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/nav_item_idols_icon_outlined"
+                android:padding="9dp"
+                android:layout_gravity="center"
+                app:tint="@color/blue_light_A50"/>
+        </LinearLayout>
+    </LinearLayout>
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

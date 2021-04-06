@@ -21,13 +21,11 @@ public class IdolsFragment extends Fragment {
 
     private final static String TAG = IdolsFragment.class.getSimpleName();
     private final MyData myData = MyData.getMyData();
-    private TextView idolsTV;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_idols, container, false);
-        idolsTV = view.findViewById(R.id.idols_text_view);
         return view;
     }
 
@@ -41,7 +39,7 @@ public class IdolsFragment extends Fragment {
             PyObject idols = mainModule.callAttr("get_all_idols");
             List<PyObject> idolsList = idols.asList();
             Log.e(TAG, "Size: " + idolsList.size());
-            idolsTV.setText(idolsList.toString());
+            Log.e(TAG, idolsList.toString());
         }
     }
 }

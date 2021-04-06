@@ -23,6 +23,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.chaquo.python.PyObject;
@@ -42,7 +44,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class HomeActivity extends AppCompatActivity
-        implements View.OnClickListener, BottomNavigationView.OnNavigationItemSelectedListener {
+        implements View.OnClickListener {
 
     private static final String TAG = HomeActivity.class.getSimpleName();
 
@@ -53,7 +55,15 @@ public class HomeActivity extends AppCompatActivity
     private AppCompatImageButton recognizerBtn;
 
     // Bottom Nav
-    private BottomNavigationView bottomNav;
+//    private BottomNavigationView bottomNav;
+    private LinearLayout recognizeNavItem, galleryNavItem, favoriteNavItem, idolsNavItem;
+    private ImageView recognizeIcon, galleryIcon, favoriteIcon, idolsIcon;
+    /*
+    0 - recognizeNavItem
+    1 - galleryNavItem
+    2 - favoriteNavItem
+    3 - idolsNavItem
+     */
 
     // CameraX
     private CameraControl cameraControl;
@@ -86,7 +96,11 @@ public class HomeActivity extends AppCompatActivity
 
         // Button is Clicked
         recognizerBtn.setOnClickListener(this);
-        bottomNav.setOnNavigationItemSelectedListener(this);
+//        bottomNav.setOnNavigationItemSelectedListener(this);
+        recognizeNavItem.setOnClickListener(this);
+        galleryNavItem.setOnClickListener(this);
+        favoriteNavItem.setOnClickListener(this);
+        idolsNavItem.setOnClickListener(this);
 
         // Check Python is Started
         if (! Python.isStarted()) {
@@ -131,8 +145,18 @@ public class HomeActivity extends AppCompatActivity
 
         previewView = findViewById(R.id.camera_preview_view);
 
-        bottomNav = findViewById(R.id.bottom_nav_view);
-        bottomNav.setSelectedItemId(R.id.recognizer_item);
+//        bottomNav = findViewById(R.id.bottom_nav_view);
+//        bottomNav.setSelectedItemId(R.id.recognizer_item);
+        // Nav Items
+        recognizeNavItem = findViewById(R.id.recognizer_nav_item);
+        galleryNavItem = findViewById(R.id.gallery_nav_item);
+        favoriteNavItem = findViewById(R.id.favorite_nav_item);
+        idolsNavItem = findViewById(R.id.idols_nav_item);
+        // Nav Icons
+        recognizeIcon = findViewById(R.id.recognizer_nav_item_icon);
+        galleryIcon = findViewById(R.id.gallery_nav_item_icon);
+        favoriteIcon = findViewById(R.id.favorite_nav_item_icon);
+        idolsIcon = findViewById(R.id.idols_nav_item_icon);
 
         zoomSlider = findViewById(R.id.zoom_slider);
     }
@@ -140,13 +164,114 @@ public class HomeActivity extends AppCompatActivity
     // ===========================================================================================
     @Override
     public void onClick(View v) {
-        int viewId = v.getId();
-        if (viewId == R.id.recognizer_button) {
-            Bitmap bitmapFull = previewView.getBitmap();
-            myData.setRecognizedIdolBitmapFull(bitmapFull);
-            Intent toMain = new Intent(this, RecognitionActivity.class);
-            startActivity(toMain);
+        switch (v.getId()) {
+            case R.id.recognizer_button:
+                Bitmap bitmapFull = previewView.getBitmap();
+                myData.setRecognizedIdolBitmapFull(bitmapFull);
+                Intent toMain = new Intent(this, RecognitionActivity.class);
+                startActivity(toMain);
+                break;
+            case R.id.recognizer_nav_item:
+                selectNavItem(0);
+                recognizeNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_blue));
+                galleryNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_space_gray));
+                favoriteNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_space_gray));
+                idolsNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_space_gray));
+
+                recognizeIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_accent));
+                galleryIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_light_A50));
+                favoriteIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_light_A50));
+                idolsIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_light_A50));
+
+                recognizeIcon.setImageDrawable(getDrawable(R.drawable.nav_item_recognizer_icon_filled));
+                galleryIcon.setImageDrawable(getDrawable(R.drawable.nav_item_gallery_icon_outlined));
+                favoriteIcon.setImageDrawable(getDrawable(R.drawable.nav_item_heart_icon_outlined));
+                idolsIcon.setImageDrawable(getDrawable(R.drawable.nav_item_idols_icon_outlined));
+
+                recognizeIcon.setPadding(9, 9, 9, 9);
+                galleryIcon.setPadding(12, 12, 12, 12);
+                favoriteIcon.setPadding(12, 12, 12, 12);
+                idolsIcon.setPadding(9, 9, 9, 9);
+
+                recognizeIcon.setPadding(toPx(9), toPx(9), toPx(9), toPx(9));
+                galleryIcon.setPadding(toPx(12), toPx(12), toPx(12), toPx(12));
+                favoriteIcon.setPadding(toPx(12), toPx(12), toPx(12), toPx(12));
+                idolsIcon.setPadding(toPx(9), toPx(9), toPx(9), toPx(9));
+
+                break;
+            case R.id.gallery_nav_item:
+                selectNavItem(1);
+                recognizeNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_space_gray));
+                galleryNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_yellow));
+                favoriteNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_space_gray));
+                idolsNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_space_gray));
+
+                recognizeIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_light_A50));
+                galleryIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.yellow_accent));
+                favoriteIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_light_A50));
+                idolsIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_light_A50));
+
+                recognizeIcon.setImageDrawable(getDrawable(R.drawable.nav_item_recognizer_icon_outlined));
+                galleryIcon.setImageDrawable(getDrawable(R.drawable.nav_item_gallery_icon_filled));
+                favoriteIcon.setImageDrawable(getDrawable(R.drawable.nav_item_heart_icon_outlined));
+                idolsIcon.setImageDrawable(getDrawable(R.drawable.nav_item_idols_icon_outlined));
+
+                recognizeIcon.setPadding(toPx(10), toPx(10), toPx(10), toPx(10));
+                galleryIcon.setPadding(toPx(9), toPx(9), toPx(9), toPx(9));
+                favoriteIcon.setPadding(toPx(12), toPx(12), toPx(12), toPx(12));
+                idolsIcon.setPadding(toPx(9), toPx(9), toPx(9), toPx(9));
+                break;
+            case R.id.favorite_nav_item:
+                selectNavItem(2);
+                recognizeNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_space_gray));
+                galleryNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_space_gray));
+                favoriteNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_red));
+                idolsNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_space_gray));
+
+                recognizeIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_light_A50));
+                galleryIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_light_A50));
+                favoriteIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.red_accent));
+                idolsIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_light_A50));
+
+                recognizeIcon.setImageDrawable(getDrawable(R.drawable.nav_item_recognizer_icon_outlined));
+                galleryIcon.setImageDrawable(getDrawable(R.drawable.nav_item_gallery_icon_outlined));
+                favoriteIcon.setImageDrawable(getDrawable(R.drawable.nav_item_heart_icon_filled));
+                idolsIcon.setImageDrawable(getDrawable(R.drawable.nav_item_idols_icon_outlined));
+
+                recognizeIcon.setPadding(toPx(10), toPx(10), toPx(10), toPx(10));
+                galleryIcon.setPadding(toPx(12), toPx(12), toPx(12), toPx(12));
+                favoriteIcon.setPadding(toPx(9), toPx(9), toPx(9), toPx(9));
+                idolsIcon.setPadding(toPx(9), toPx(9), toPx(9), toPx(9));
+                break;
+            case R.id.idols_nav_item:
+                selectNavItem(3);
+                recognizeNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_space_gray));
+                galleryNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_space_gray));
+                favoriteNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_space_gray));
+                idolsNavItem.setBackground(getDrawable(R.drawable.bottom_nav_item_bg_green));
+
+                recognizeIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_light_A50));
+                galleryIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_light_A50));
+                favoriteIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue_light_A50));
+                idolsIcon.setImageTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.green_accent));
+
+                recognizeIcon.setImageDrawable(getDrawable(R.drawable.nav_item_recognizer_icon_outlined));
+                galleryIcon.setImageDrawable(getDrawable(R.drawable.nav_item_gallery_icon_outlined));
+                favoriteIcon.setImageDrawable(getDrawable(R.drawable.nav_item_heart_icon_outlined));
+                idolsIcon.setImageDrawable(getDrawable(R.drawable.nav_item_idols_icon_filled));
+
+                recognizeIcon.setPadding(toPx(10), toPx(10), toPx(10), toPx(10));
+                galleryIcon.setPadding(toPx(12), toPx(12), toPx(12), toPx(12));
+                favoriteIcon.setPadding(toPx(12), toPx(12), toPx(12), toPx(12));
+                idolsIcon.setPadding(toPx(7), toPx(7), toPx(7), toPx(7));
+                break;
         }
+    }
+
+    private int toPx(int dp) {
+        float density = this.getResources().getDisplayMetrics().density;
+        int px= (int) (dp * density);
+        return px;
     }
 
     // ===========================================================================================
@@ -299,24 +424,70 @@ public class HomeActivity extends AppCompatActivity
 
     // ===========================================================================================
 
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+//    @Override
+//    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+//        Fragment selectedFragment = null;
+//        switch (item.getItemId()) {
+//            case R.id.collections_item:
+//                selectedFragment = new GalleryFragment();
+//                break;
+//            case R.id.favorites_item:
+//                selectedFragment = new FavoritesFragment();
+//                break;
+//            case R.id.idols_item:
+//                selectedFragment = new IdolsFragment();
+//                break;
+//            // recognizer_item
+//            // selectedFragment is null
+//        }
+//
+//        // Remove Existing Fragment if Null (Empty the Frame Container)
+//        if (selectedFragment == null) {
+//            for (Fragment fragment: getSupportFragmentManager().getFragments()) {
+//                getSupportFragmentManager()
+//                        .beginTransaction()
+//                        .remove(fragment)
+//                        .commit();
+//            }
+//            recognizerBtn.setVisibility(View.VISIBLE);
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                getWindow().setStatusBarColor(getResources().getColor(R.color.transparent, this.getTheme()));
+//            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
+//            }
+//        }
+//        // Replace to Collections or Favorites Fragment
+//        else {
+//            getSupportFragmentManager()
+//                    .beginTransaction()
+//                    .replace(R.id.fragment_container, selectedFragment)
+//                    .commit();
+//            recognizerBtn.setVisibility(View.GONE);
+//            // Status Bar
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                getWindow().setStatusBarColor(getResources().getColor(R.color.space_gray_light_2, this.getTheme()));
+//            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                getWindow().setStatusBarColor(getResources().getColor(R.color.space_gray_light_2));
+//            }
+//        }
+//        return false;
+//    }
+
+    private void selectNavItem(int navItemValue) {
         Fragment selectedFragment = null;
-        switch (item.getItemId()) {
-            case R.id.collections_item:
+        switch (navItemValue) {
+            case 1:
                 selectedFragment = new GalleryFragment();
                 break;
-            case R.id.favorites_item:
+            case 2:
                 selectedFragment = new FavoritesFragment();
                 break;
-            case R.id.idols_item:
+            case 3:
                 selectedFragment = new IdolsFragment();
                 break;
             // recognizer_item
             // selectedFragment is null
         }
-
-        // Remove Existing Fragment if Null (Empty the Frame Container)
         if (selectedFragment == null) {
             for (Fragment fragment: getSupportFragmentManager().getFragments()) {
                 getSupportFragmentManager()
@@ -325,6 +496,7 @@ public class HomeActivity extends AppCompatActivity
                         .commit();
             }
             recognizerBtn.setVisibility(View.VISIBLE);
+            zoomSlider.setVisibility(View.VISIBLE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 getWindow().setStatusBarColor(getResources().getColor(R.color.transparent, this.getTheme()));
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -338,6 +510,7 @@ public class HomeActivity extends AppCompatActivity
                     .replace(R.id.fragment_container, selectedFragment)
                     .commit();
             recognizerBtn.setVisibility(View.GONE);
+            zoomSlider.setVisibility(View.GONE);
             // Status Bar
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 getWindow().setStatusBarColor(getResources().getColor(R.color.space_gray_light_2, this.getTheme()));
@@ -345,7 +518,6 @@ public class HomeActivity extends AppCompatActivity
                 getWindow().setStatusBarColor(getResources().getColor(R.color.space_gray_light_2));
             }
         }
-        return true;
     }
 
     // ===========================================================================================
