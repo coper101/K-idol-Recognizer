@@ -39,6 +39,8 @@
     <string name="my_favorites">My Favorites</string>
     <string name="explore">Explore</string>
     <string name="rearrange">Rearrange</string>
+    <string name="profile">Profile</string>
+    <string name="sort_amp_filter"><![CDATA[Sort & Filter]]></string>
 
     <array name="initial_zoom_value">
         <item>0.0</item>

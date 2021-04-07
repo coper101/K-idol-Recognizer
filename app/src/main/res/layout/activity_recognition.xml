@@ -62,7 +62,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
                 android:buttonTint="@color/white"
-                android:button="@drawable/favorite_selector"/>
+                android:button="@drawable/favorite_heart_selector"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/save_button"

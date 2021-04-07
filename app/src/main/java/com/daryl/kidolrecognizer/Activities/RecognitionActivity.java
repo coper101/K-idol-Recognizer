@@ -3,10 +3,8 @@ package com.daryl.kidolrecognizer.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.appcompat.widget.AppCompatTextView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
-import androidx.core.widget.TextViewCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -692,7 +690,7 @@ public class RecognitionActivity extends AppCompatActivity
     // Reference: https://www.section.io/engineering-education/bottom-sheet-dialogs-using-android-studio/
     private void initModalBottomSheet() {
         bottomSheetDialog = new BottomSheetDialog(this);
-        bottomSheetDialog.setContentView(R.layout.modal_bottom_sheet);
+        bottomSheetDialog.setContentView(R.layout.modal_bottom_sheet_pick_to_save);
         // Modal Bottom Sheet Views
         idolCroppedIV = bottomSheetDialog.findViewById(R.id.idol_cropped_image_view);
         idolFullIV = bottomSheetDialog.findViewById(R.id.idol_full_image_view);

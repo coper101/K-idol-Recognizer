@@ -35,6 +35,11 @@ public class Idol {
         this.group = group;
     }
 
+    public Idol(String id, String stageName, String group, boolean isFavorite) {
+        this(id, stageName, group);
+        this.isFavorite = isFavorite;
+    }
+
     public String getId() {
         return id;
     }

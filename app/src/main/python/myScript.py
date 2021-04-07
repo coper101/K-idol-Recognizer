@@ -194,7 +194,7 @@ def get_all_idols():
         # read csv
         data = pd.read_csv(dataFileNameUser)
         # get only stage name & group name
-        allIdols = data[['Stage Name', 'Group Name']]
+        allIdols = data[['Id', 'Stage Name', 'Group Name', 'Favorite']]
         # to list
         allIdolsVal = allIdols.values.tolist()
 

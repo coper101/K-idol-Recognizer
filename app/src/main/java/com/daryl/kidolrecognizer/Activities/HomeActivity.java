@@ -54,7 +54,7 @@ public class HomeActivity extends AppCompatActivity
     // Views
     private AppCompatImageButton recognizerBtn;
 
-    // Bottom Nav
+    // Custom Bottom Navigation
 //    private BottomNavigationView bottomNav;
     private LinearLayout recognizeNavItem, galleryNavItem, favoriteNavItem, idolsNavItem;
     private ImageView recognizeIcon, galleryIcon, favoriteIcon, idolsIcon;

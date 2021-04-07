@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/modal_bottom_sheet_idol_profile"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="25dp"
+    android:paddingBottom="25dp"
+    android:background="@color/space_gray_light"
+    android:weightSum="2">
+
+    <!-- Header, Cancel Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginHorizontal="25dp"
+        android:layout_marginBottom="30dp"
+        android:weightSum="10">
+        <!-- Profile Header -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="8.5"
+            style="@style/ModalTitle"
+            android:text="@string/profile"/>
+        <!-- Cancel Button -->
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/profile_cancel_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.5"
+            android:layout_gravity="center"
+            style="@style/ModalCloseButton"
+            android:padding="0dp"/>
+    </LinearLayout>
+
+    <!-- Profile Values -->
+    <include layout="@layout/idol_profile"/>
+
+</LinearLayout>

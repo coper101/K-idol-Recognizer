@@ -31,15 +31,21 @@ import java.util.List;
 public class FavoritesFragment extends Fragment implements View.OnClickListener {
 
     private final static String TAG = FavoritesFragment.class.getSimpleName();
+
+    // Data
     private final MyData myData = MyData.getMyData();
     private final PyObject mainModule = myData.getMainModule();
 
+    // Recycler View Components
     private FaveIdolListAdapterWithRecyclerView faveIdolsAdapterRV;
     private ArrayList<Idol> faveIdolList;
     private RecyclerView faveIdolsRV;
     private LinearLayoutManager layoutManager;
+
+    // Rearranging List Items
     private final ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new TouchHelper());
 
+    // Views
     private LinearLayout emptyFaveIllus;
     private MaterialButton galleryLinkBtn, rearrangeBtn;
     private LinearLayout rearrangeContainer;
@@ -61,22 +67,26 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.e(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_favorites, container, false);
-        // Recycler View
+        // Recycler View Components
         faveIdolsRV = view.findViewById(R.id.favorite_idols_recycler_view);
         faveIdolsRV.setAdapter(faveIdolsAdapterRV);
         faveIdolsRV.setLayoutManager(layoutManager);
         faveIdolsAdapterRV.setOnItemCheckedChangeListener(new FaveIdolListAdapterWithRecyclerView.OnItemCheckedChangeListener() {
             @Override
             public void onCheckedChange(int position, boolean isChecked) {
+
                 if (!isChecked) {
                     Toast.makeText(getContext(), "Unchecked", Toast.LENGTH_SHORT).show();
+
                     if (mainModule != null) {
+
                         // Update Favorite Column of Idol to False
                         String id = faveIdolList.get(position).getId();
                         String boolVal = "False";
                         PyObject isUpdatedStr = mainModule.callAttr("update_favorite", id, boolVal);
                         boolean isUpdated = isUpdatedStr.toBoolean();
                         Log.e(TAG, "Is Favorites Updated: " + isUpdated);
+
                         // Remove Idol from List Recycler View
                         faveIdolList.remove(position);
                         faveIdolsAdapterRV.notifyDataSetChanged();
@@ -84,9 +94,12 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
                                 .setAnchorView(getActivity().findViewById(R.id.custom_bottom_navigation))
                                 .show();
                         showEmptyIllustration();
-                    }
-                }
-            }
+
+                    } // end of checking main module is not null
+
+                } // end of checking is not checked
+
+            } // end of onCheckedChange
         });
         // Empty Illustration
         emptyFaveIllus = view.findViewById(R.id.empty_favorites_illustration);
@@ -102,9 +115,7 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
         super.onActivityCreated(savedInstanceState);
         Log.e(TAG, "onActivityCreated");
 
-        // Rearranging Favorite Idols
-//        itemTouchHelper.attachToRecyclerView(faveIdolsRV);
-
+        // Hide Views
         galleryLinkBtn.setVisibility(View.GONE);
         rearrangeContainer.setVisibility(View.GONE);
 
@@ -133,7 +144,6 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
             showEmptyIllustration();
         }
     }
-
 
     @Override
     public void onResume() {

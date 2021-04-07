@@ -10,7 +10,7 @@
         android:title="Collections"/>
     <item
         android:id="@+id/favorites_item"
-        android:icon="@drawable/favorite_filled_thin"
+        android:icon="@drawable/favorite_heart_filled"
         android:title="Favorites"/>
     <item
         android:id="@+id/idols_item"

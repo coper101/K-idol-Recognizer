@@ -95,7 +95,7 @@
                     android:layout_width="30dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:button="@drawable/favorite_filled_thin"
+                    android:button="@drawable/favorite_heart_filled"
                     android:buttonTint="@color/red_accent"
                     android:gravity="center" />
             </LinearLayout>

@@ -1,71 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
+    android:id="@+id/idol_card_view"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="200dp"
+    android:layout_marginVertical="6.5dp"
     android:clickable="true"
     style="@style/CardOutline">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- Idol's Face -->
         <ImageView
+            android:id="@+id/idols_idol_image_view"
             android:layout_width="match_parent"
-            android:layout_height="150dp"/>
+            android:layout_height="150dp"
+            android:layout_marginBottom="50dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <!-- Stage Name -->
+        <TextView
+            android:id="@+id/idols_idol_stage_name_text_view"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="10">
+            android:layout_marginStart="13dp"
+            android:layout_marginTop="2dp"
+            android:fontFamily="@font/poppins"
+            app:fontFamily="@font/poppins"
+            android:text="Stage Name"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/idols_idol_image_view" />
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_weight="8">
+        <!-- Group Name -->
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="12dp"
-                    android:text="Stage Name"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/poppins"/>
+        <!-- Favorite Button -->
+        <TextView
+            android:id="@+id/idols_idol_group_name_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:fontFamily="@font/poppins_light"
+            app:fontFamily="@font/poppins_light"
+            android:text="Group Name"
+            android:textSize="12sp"
+            android:textAllCaps="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/idols_idol_stage_name_text_view"
+            app:layout_constraintVertical_bias="0.0" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="12dp"
-                    android:text="Group Name"
-                    android:textSize="9sp"
-                    android:fontFamily="@font/poppins_extra_light"/>
+        <CheckBox
+            android:id="@+id/idols_idol_favorite_button"
+            android:layout_width="24dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="13dp"
+            android:button="@drawable/favorite_heart_selector_small"
+            android:buttonTint="@color/red_accent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/idols_idol_image_view" />
 
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:gravity="center|end"
-                android:paddingEnd="12dp">
-
-                <CheckBox
-                    android:id="@+id/idol_favorite_button_idols"
-                    android:layout_width="30dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:button="@drawable/favorite_filled_thin"
-                    android:buttonTint="@color/red_accent"
-                    android:gravity="center" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.google.android.material.card.MaterialCardView>
