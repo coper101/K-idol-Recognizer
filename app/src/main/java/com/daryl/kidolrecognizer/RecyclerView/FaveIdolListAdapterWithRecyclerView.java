@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.daryl.kidolrecognizer.Data.Idol;
@@ -58,18 +59,18 @@ public class FaveIdolListAdapterWithRecyclerView
             holder.faveItemView.setPadding(toPx(14), toPx(20), toPx(10), toPx(10));
             holder.idolRanking.setText("1");
             holder.idolRanking.setTextColor(context.getColor(R.color.yellow_accent));
-            holder.idolRanking.setTypeface(context.getResources().getFont(R.font.poppins));
+            holder.idolRanking.setTypeface(ResourcesCompat.getFont(context, R.font.poppins_medium));
         } else if (position == 1) {
             holder.idolRanking.setText("2");
             holder.idolRanking.setTextColor(context.getColor(R.color.yellow_accent));
-            holder.idolRanking.setTypeface(context.getResources().getFont(R.font.poppins_light));
+            holder.idolRanking.setTypeface(ResourcesCompat.getFont(context, R.font.poppins));
         } else if (position == 2) {
             holder.idolRanking.setText("3");
             holder.idolRanking.setTextColor(context.getColor(R.color.yellow_accent));
-            holder.idolRanking.setTypeface(context.getResources().getFont(R.font.poppins_extra_light));
+            holder.idolRanking.setTypeface(ResourcesCompat.getFont(context, R.font.poppins_light));
         } else {
             holder.idolRanking.setText("-");
-            holder.idolRanking.setTypeface(context.getResources().getFont(R.font.poppins_extra_light));
+            holder.idolRanking.setTypeface(ResourcesCompat.getFont(context, R.font.poppins_extra_light));
         }
         holder.idolStageName.setText(idol.getStageName());
         holder.idolGroupName.setText(idol.getGroup());

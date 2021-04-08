@@ -1,7 +1,7 @@
 # Files imported into python directory
 # - labels.pickle
 # - encodings.pickle
-# - Kpop_Idols_210321_CSV.csv
+# - Kpop_Idols_090421_CSV.csv
 
 import os
 import numpy as np
@@ -11,6 +11,7 @@ import base64
 import face_recognition
 import pandas as pd
 
+kpop_idols_csv_filename = "Kpop_Idols_090421_CSV.csv"
 
 def detect_face_fr(image_data):
     # Decode Image Data and Convert To Numpy
@@ -71,8 +72,8 @@ def retrieve_encodings_labels():
 
 def get_idol_profile(id):
 
-    dataFileName = os.path.join(os.path.dirname(__file__), "Kpop_Idols_210321_CSV.csv")
-    dataFileNameUser = os.path.join(os.environ["HOME"], "Kpop_Idols_210321_CSV.csv")
+    dataFileName = os.path.join(os.path.dirname(__file__), kpop_idols_csv_filename)
+    dataFileNameUser = os.path.join(os.environ["HOME"], kpop_idols_csv_filename)
 
     # read from? home user directory OR python directory
     if os.path.exists(dataFileNameUser):
@@ -112,8 +113,8 @@ def update_favorite(id, isFave):
         # convert to bool
         boolValue = eval(properValue)
 
-        dataFileName = os.path.join(os.path.dirname(__file__), "Kpop_Idols_210321_CSV.csv")
-        dataFileNameUser = os.path.join(os.environ["HOME"], "Kpop_Idols_210321_CSV.csv")
+        dataFileName = os.path.join(os.path.dirname(__file__), kpop_idols_csv_filename)
+        dataFileNameUser = os.path.join(os.environ["HOME"], kpop_idols_csv_filename)
         # read from? home user directory OR python directory
         if os.path.exists(dataFileNameUser):
             data = pd.read_csv(dataFileNameUser)
@@ -137,12 +138,12 @@ def update_favorite(id, isFave):
 
 def save_idols_data_to_home():
 
-    dataFileName = os.path.join(os.path.dirname(__file__), "Kpop_Idols_210321_CSV.csv")
+    dataFileName = os.path.join(os.path.dirname(__file__), kpop_idols_csv_filename)
     data = pd.read_csv(dataFileName)
 
     # save data to home: /data/user/0/com.daryl.kidolrecognizer/files
     homePath = os.environ["HOME"]
-    newFilePath = os.path.join(homePath, "Kpop_Idols_210321_CSV.csv")
+    newFilePath = os.path.join(homePath, kpop_idols_csv_filename)
     data.to_csv(newFilePath, index=False)
 
     exist = os.path.exists(newFilePath)
@@ -152,7 +153,7 @@ def save_idols_data_to_home():
 
 def check_idols_data_from_home():
     homePath = os.environ["HOME"]
-    newFilePath = os.path.join(homePath, "Kpop_Idols_210321_CSV.csv")
+    newFilePath = os.path.join(homePath, kpop_idols_csv_filename)
     exist = os.path.exists(newFilePath)
     return exist
 
@@ -160,7 +161,7 @@ def get_favorite_idols():
 
     faveIdols = []
 
-    dataFileNameUser = os.path.join(os.environ["HOME"], "Kpop_Idols_210321_CSV.csv")
+    dataFileNameUser = os.path.join(os.environ["HOME"], kpop_idols_csv_filename)
     exist = os.path.exists(dataFileNameUser)
     print('Home CSV Exist? ', exist)
 
@@ -186,7 +187,7 @@ def get_all_idols():
 
     idolsList = []
 
-    dataFileNameUser = os.path.join(os.environ["HOME"], "Kpop_Idols_210321_CSV.csv")
+    dataFileNameUser = os.path.join(os.environ["HOME"], kpop_idols_csv_filename)
     exist = os.path.exists(dataFileNameUser)
     print('Home CSV Exist? ', exist)
 
