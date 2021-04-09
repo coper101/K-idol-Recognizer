@@ -20,6 +20,8 @@ import java.util.ArrayList;
 
 public class GalleryFragment extends Fragment {
 
+    private static final String TAG = FavoritesFragment.class.getSimpleName();
+
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
     private FirebaseRecyclerAdapter firebaseRecyclerAdapter;
@@ -44,4 +46,5 @@ public class GalleryFragment extends Fragment {
 
 //        Fir
     }
-}
+
+} // end of class

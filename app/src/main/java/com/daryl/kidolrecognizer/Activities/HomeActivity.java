@@ -21,7 +21,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,7 +34,6 @@ import com.daryl.kidolrecognizer.Fragments.GalleryFragment;
 import com.daryl.kidolrecognizer.Fragments.FavoritesFragment;
 import com.daryl.kidolrecognizer.Fragments.IdolsFragment;
 import com.daryl.kidolrecognizer.R;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.slider.RangeSlider;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -69,7 +67,6 @@ public class HomeActivity extends AppCompatActivity
     private CameraControl cameraControl;
     private PreviewView previewView;
     private ExecutorService cameraExecutor;
-
     private RangeSlider zoomSlider;
 
     // Permissions
@@ -109,7 +106,7 @@ public class HomeActivity extends AppCompatActivity
         Python python = Python.getInstance();
 
         // Run Get Main Module on a new Thread
-        // Average Time Taken: 5, 2 seconds
+        // It might take a while so run it in a new thread to not interrupt the main thread
         Thread mainModuleThread = new Thread(
             new Runnable() {
                 @Override
@@ -122,6 +119,8 @@ public class HomeActivity extends AppCompatActivity
                             ((end - start) / 1000000000)
                             + " seconds");
                     updateButtonState(true);
+                    // Save Idols CSV to App Users File Path if not saved yet
+                    saveIdolsCSVtoHome();
                 }
             }
         );
@@ -367,26 +366,6 @@ public class HomeActivity extends AppCompatActivity
                 }
             }
         }
-
-        // Persist Idols CSV Save Status
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean isCSVSaved = sp.getBoolean("Idols CSV Saved", false);
-        Log.e(TAG, "onResume: isCSVSaved? " + isCSVSaved);
-        Toast.makeText(this, "onResume: isCSVSaved? " + isCSVSaved, Toast.LENGTH_SHORT).show();
-
-        if (!isCSVSaved) {
-            if (MyData.getMyData().getMainModule() != null) {
-                // Save Idols CSV to Home
-                PyObject mainMod = MyData.getMyData().getMainModule();
-
-                boolean isSave = mainMod.callAttr("save_idols_data_to_home").toBoolean();
-                Log.e(TAG, "onResume: Idols CSV is Saved? " + isSave);
-
-                boolean success = sp.edit().putBoolean("Idols CSV Saved", isSave).commit();
-                Log.e(TAG, "onResume: Successful Commit? " + success);
-            }
-        }
-
     }
 
     @Override
@@ -400,26 +379,6 @@ public class HomeActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         Log.e(TAG, "onPause called");
-
-        // Persist Idols CSV Save Status
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean isCSVSaved = sp.getBoolean("Idols CSV Saved", false);
-        Log.e(TAG, "onPause: isCSVSaved? " + isCSVSaved);
-        Toast.makeText(this, "onPause: isCSVSaved? " + isCSVSaved, Toast.LENGTH_SHORT).show();
-
-        if (!isCSVSaved) {
-            if (MyData.getMyData().getMainModule() != null) {
-                // Save Idols CSV to Home
-                PyObject mainMod = MyData.getMyData().getMainModule();
-
-                boolean isSave = mainMod.callAttr("save_idols_data_to_home").toBoolean();
-                Log.e(TAG, "onPause: Idols CSV is Saved? " + isSave);
-
-                boolean success = sp.edit().putBoolean("Idols CSV Saved", isSave).commit();
-                Log.e(TAG, "onPause: Successful Commit? " + success);
-            }
-        }
-
     }
 
     // ===========================================================================================
@@ -474,25 +433,38 @@ public class HomeActivity extends AppCompatActivity
 //    }
 
     private void selectNavItem(int navItemValue) {
+
         Fragment selectedFragment = null;
+        String fragmentTAG = null;
+
+        String galleryFragmentTAG = GalleryFragment.class.getSimpleName();
+        String favoritesFragmentTAG = FavoritesFragment.class.getSimpleName();
+        String idolsFragmentTAG = IdolsFragment.class.getSimpleName();
+
         switch (navItemValue) {
             case 1:
                 selectedFragment = new GalleryFragment();
+                fragmentTAG = galleryFragmentTAG;
                 break;
             case 2:
                 selectedFragment = new FavoritesFragment();
+                fragmentTAG = favoritesFragmentTAG;
                 break;
             case 3:
                 selectedFragment = new IdolsFragment();
+                fragmentTAG = idolsFragmentTAG;
                 break;
             // recognizer_item
             // selectedFragment is null
         }
-        if (selectedFragment == null) {
+
+        // Hide All Fragments
+        if (selectedFragment == null && fragmentTAG == null) {
+            // Hide All Fragments to show Activity (Preview View)
             for (Fragment fragment: getSupportFragmentManager().getFragments()) {
                 getSupportFragmentManager()
                         .beginTransaction()
-                        .remove(fragment)
+                        .hide(fragment)
                         .commit();
             }
             recognizerBtn.setVisibility(View.VISIBLE);
@@ -503,21 +475,135 @@ public class HomeActivity extends AppCompatActivity
                 getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
             }
         }
-        // Replace to Collections or Favorites Fragment
-        else {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, selectedFragment)
-                    .commit();
+        // Add Show Selected Fragment
+        else if (selectedFragment != null && fragmentTAG != null) {
+            // Check Which Fragment is Selected
+
+            Log.e(TAG, "sel frag not null & fragment tag not null");
+            // -> Gallery Fragment
+            if (fragmentTAG.equals(galleryFragmentTAG)) {
+                // Gallery Fragment Added?
+                // YES - Show it
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag(galleryFragmentTAG);
+                if (fragment != null) {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .show(fragment)
+                            .commit();
+                }
+                // NO - Add it
+                else {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .add(R.id.fragment_container, selectedFragment, galleryFragmentTAG)
+                            .commit();
+                }
+                // Hide Other Fragments Visible
+                Fragment favoriteFrag = getSupportFragmentManager().findFragmentByTag(favoritesFragmentTAG);
+                Fragment idolsFrag = getSupportFragmentManager().findFragmentByTag(idolsFragmentTAG);
+                if (favoriteFrag != null) {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .hide(favoriteFrag)
+                            .commit();
+                }
+                if (idolsFrag != null) {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .hide(idolsFrag)
+                            .commit();
+                }
+            }
+
+            // -> Favorites Fragment
+            else if (fragmentTAG.equals(favoritesFragmentTAG)) {
+                // Favorites Fragment Added?
+                // YES - Show it
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag(favoritesFragmentTAG);
+                if (fragment != null) {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .show(fragment)
+                            .commit();
+                }
+                // NO - Add it
+                else {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .add(R.id.fragment_container, selectedFragment, favoritesFragmentTAG)
+                            .commit();
+                }
+                // Hide Other Fragments Visible
+                Fragment galleryFrag = getSupportFragmentManager().findFragmentByTag(galleryFragmentTAG);
+                Fragment idolsFrag = getSupportFragmentManager().findFragmentByTag(idolsFragmentTAG);
+                if (idolsFrag != null) {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .hide(idolsFrag)
+                            .commit();
+                }
+                if (galleryFrag != null) {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .hide(galleryFrag)
+                            .commit();
+                }
+            }
+
+            // -> Idols Fragment
+            else if (fragmentTAG.equals(idolsFragmentTAG)) {
+                // Idols Fragment Added?
+                // YES - Show it
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag(idolsFragmentTAG);
+                if (fragment != null) {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .show(fragment)
+                            .commit();
+                }
+                // NO - Add it
+                else {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .add(R.id.fragment_container, selectedFragment, idolsFragmentTAG)
+                            .commit();
+                }
+                // Hide Other Fragments Visible
+                Fragment galleryFrag = getSupportFragmentManager().findFragmentByTag(galleryFragmentTAG);
+                Fragment favoritesFrag = getSupportFragmentManager().findFragmentByTag(favoritesFragmentTAG);
+
+                if (galleryFrag != null) {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .hide(galleryFrag)
+                            .commit();
+                }
+                if (favoritesFrag != null) {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .hide(favoritesFrag)
+                            .commit();
+                }
+            }
+
+            // Replace to Collections or Favorites Fragment
+//            getSupportFragmentManager()
+//                    .beginTransaction()
+//                    .replace(R.id.fragment_container, selectedFragment, fragmentTAG)
+//                    .commit();
+
+            // Hide Camera Buttons & Controls to not interfere with Fragments
             recognizerBtn.setVisibility(View.GONE);
             zoomSlider.setVisibility(View.GONE);
-            // Status Bar
+
+            // Change Color of Status Bar
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 getWindow().setStatusBarColor(getResources().getColor(R.color.space_gray_light_2, this.getTheme()));
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 getWindow().setStatusBarColor(getResources().getColor(R.color.space_gray_light_2));
             }
         }
+
     }
 
     // ===========================================================================================
@@ -527,6 +613,27 @@ public class HomeActivity extends AppCompatActivity
             Log.e(TAG, "Camera Control is NOT null\nZoom Value: " + percentageInDeci);
             myData.setLastZoomValue(percentageInDeci);
             cameraControl.setLinearZoom(percentageInDeci);
+        }
+    }
+
+    // ===========================================================================================
+    private void saveIdolsCSVtoHome() {
+        // Persist Idols CSV Save Status
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(HomeActivity.this);
+        boolean isCSVSaved = sp.getBoolean("Idols CSV Saved", false);
+        Log.e(TAG, "onResume: isCSVSaved? " + isCSVSaved);
+
+        if (!isCSVSaved) {
+            if (MyData.getMyData().getMainModule() != null) {
+                // Save Idols CSV to Home
+                PyObject mainMod = MyData.getMyData().getMainModule();
+
+                boolean isSave = mainMod.callAttr("save_idols_data_to_home").toBoolean();
+                Log.e(TAG, "onResume: Idols CSV is Saved? " + isSave);
+
+                boolean success = sp.edit().putBoolean("Idols CSV Saved", isSave).commit();
+                Log.e(TAG, "onResume: Successful Commit? " + success);
+            }
         }
     }
 

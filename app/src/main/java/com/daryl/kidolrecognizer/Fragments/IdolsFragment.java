@@ -55,7 +55,7 @@ public class IdolsFragment extends Fragment
         TextWatcher,
         View.OnKeyListener {
 
-    private final static String TAG = IdolsFragment.class.getSimpleName();
+    private static final String TAG = IdolsFragment.class.getSimpleName();
 
     // Data
     private final MyData myData = MyData.getMyData();
@@ -132,29 +132,58 @@ public class IdolsFragment extends Fragment
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        // Python to Idols
-        PyObject mainModule = myData.getMainModule();
-        if (mainModule != null) {
-            Log.e(TAG, "Main Module is NOT null");
-            PyObject idols = mainModule.callAttr("get_all_idols");
-            List<PyObject> idolsList = idols.asList();
-            Log.e(TAG, "Size: " + idolsList.size());
-            Log.e(TAG, idolsList.toString());
+        Thread loadIdolsThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Get All Idols
+                while (true) {
+                    PyObject mainModule = myData.getMainModule();
+                    if (mainModule != null) {
+                        Log.e(TAG, "Main Module is NOT null");
 
-            // Add Idols
-            for (PyObject faveIdol: idolsList) {
-                List<PyObject> faveIdolValues = faveIdol.asList();
-                String id = faveIdolValues.get(0).toInt() + "";
-                String stageName = faveIdolValues.get(1).toString();
-                String groupName = faveIdolValues.get(2).toString();
-                boolean isFavorite = faveIdolValues.get(3).toBoolean();
-                Idol idol = new Idol(id, stageName, groupName, isFavorite);
-                idolList.add(idol);
+                        populateIdols();
+
+                        break;
+                    }
+                }
             }
-            // Update List Recycler View
-            if (idolList.size() > 0) {
-                idolListAdapterRV.notifyDataSetChanged();
-            }
+        });
+        loadIdolsThread.start();
+    }
+
+    // ===========================================================================================
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        Log.e(TAG, "onHiddenChanged: hidden? " + hidden);
+        PyObject mainModule = myData.getMainModule();
+        if (!hidden && mainModule != null) {
+            populateIdols();
+        }
+    }
+
+    // ===========================================================================================
+    private void populateIdols() {
+        PyObject mainModule = myData.getMainModule();
+        PyObject idols = mainModule.callAttr("get_all_idols");
+        List<PyObject> idolsList = idols.asList();
+        Log.e(TAG, "Size: " + idolsList.size());
+        Log.e(TAG, idolsList.toString());
+
+        idolList.clear();
+        // Add Idols
+        for (PyObject faveIdol: idolsList) {
+            List<PyObject> faveIdolValues = faveIdol.asList();
+            String id = faveIdolValues.get(0).toInt() + "";
+            String stageName = faveIdolValues.get(1).toString();
+            String groupName = faveIdolValues.get(2).toString();
+            boolean isFavorite = faveIdolValues.get(3).toBoolean();
+            Idol idol = new Idol(id, stageName, groupName, isFavorite);
+            idolList.add(idol);
+        }
+        // Update List Recycler View
+        if (idolList.size() > 0) {
+            updateIdolListAdapter();
         }
     }
 
@@ -218,7 +247,7 @@ public class IdolsFragment extends Fragment
         cancelBtn_Filters = bottomSheetDialog_Filters.findViewById(R.id.filter_cancel_button);
         // Bottom Sheet Behavior
         bottomSheetDialogBehavior_Filters = bottomSheetDialog_Filters.getBehavior();
-        Toast.makeText(getContext(), "Display Height: " + getDisplayHeight(), Toast.LENGTH_SHORT).show();
+        Log.e(TAG, "Display Height: " + getDisplayHeight());
         bottomSheetDialogBehavior_Filters.setPeekHeight(getDisplayHeight());
     }
 
@@ -429,6 +458,16 @@ public class IdolsFragment extends Fragment
             searchIdolsET.clearFocus();
         }
         return false;
+    }
+
+    // ===========================================================================================
+    private void updateIdolListAdapter() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                idolListAdapterRV.notifyDataSetChanged();
+            }
+        });
     }
 
 
