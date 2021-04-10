@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.daryl.kidolrecognizer.Data.Idol;
 import com.daryl.kidolrecognizer.R;
 import com.google.android.material.button.MaterialButton;
@@ -87,6 +88,15 @@ public class IdolListAdapterWithRecyclerView
             params.topMargin = toPx(24);
         }
         holder.itemView.setLayoutParams(params);
+
+        // Set Idol Image Using Url (Glide)
+        String idolImageUrl = idol.getImageUrl();
+        ImageView idolFaceIV = holder.idolFaceIV;
+        if (idolImageUrl != null) {
+            Glide.with(context).load(idolImageUrl).into(idolFaceIV);
+        } else {
+            Glide.with(context).clear(idolFaceIV);
+        }
     }
 
     private int toPx(int dp) {
@@ -108,7 +118,9 @@ public class IdolListAdapterWithRecyclerView
         TextView idolStageName, idolGroupName;
         CheckBox idolFaveButton;
 
-        public IdolViewHolder(@NonNull View itemView, final OnItemCheckedChangeListener listener, final OnItemClickedListener clickedListener) {
+        public IdolViewHolder(@NonNull View itemView,
+                              final OnItemCheckedChangeListener listener,
+                              final OnItemClickedListener clickedListener) {
             super(itemView);
             idolCard = itemView.findViewById(R.id.idol_card_view);
             idolFaceIV = itemView.findViewById(R.id.idols_idol_image_view);
@@ -138,6 +150,6 @@ public class IdolListAdapterWithRecyclerView
                 }
             });
         }
-    }
+    } // end of view holder class
 
-} // end
+} // end of class

@@ -82,6 +82,8 @@ public class HomeActivity extends AppCompatActivity
 
         initViews();
 
+        recognizerBtn.setEnabled(false);
+
         cameraExecutor = Executors.newSingleThreadExecutor();
 
         // Request Camera Permission If Not Granted
@@ -140,7 +142,6 @@ public class HomeActivity extends AppCompatActivity
     // ===========================================================================================
     private void initViews() {
         recognizerBtn = findViewById(R.id.recognizer_button);
-        recognizerBtn.setEnabled(false);
 
         previewView = findViewById(R.id.camera_preview_view);
 

@@ -14,4 +14,7 @@
     <dimen name="app_bar_height">64dp</dimen>
     <dimen name="app_bar_text_size">24sp</dimen>
 
+    <dimen name="bottom_bar_height">65dp</dimen>
+    <dimen name="bottom_bar_button_height">48dp</dimen>
+
 </resources>

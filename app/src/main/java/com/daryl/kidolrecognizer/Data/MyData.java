@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 
 import com.chaquo.python.PyObject;
 
+import java.util.ArrayList;
+
 // Singleton Pattern
 public class MyData {
 
@@ -14,6 +16,7 @@ public class MyData {
     private Idol idol;
     private PyObject mainModule;
     private float lastZoomValue = -1.0f;
+    private ArrayList<Idol> allIdols;
 
     // Instantiation only allowed within this class
     private MyData() {}
@@ -70,4 +73,13 @@ public class MyData {
     public void setLastZoomValue(float lastZoomValue) {
         this.lastZoomValue = lastZoomValue;
     }
-}
+
+    public ArrayList<Idol> getAllIdols() {
+        return allIdols;
+    }
+
+    public void setAllIdols(ArrayList<Idol> allIdols) {
+        this.allIdols = allIdols;
+    }
+
+} // end class

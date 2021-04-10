@@ -2,7 +2,6 @@ package com.daryl.kidolrecognizer.Fragments;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -12,6 +11,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -26,8 +26,10 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.chaquo.python.PyObject;
 import com.daryl.kidolrecognizer.Data.Idol;
+import com.daryl.kidolrecognizer.Data.Model;
 import com.daryl.kidolrecognizer.Data.MyData;
 import com.daryl.kidolrecognizer.Data.Role;
 import com.daryl.kidolrecognizer.Data.SNS;
@@ -38,7 +40,13 @@ import com.daryl.kidolrecognizer.RecyclerView.SNSListAdapterWithRecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -59,7 +67,6 @@ public class IdolsFragment extends Fragment
 
     // Data
     private final MyData myData = MyData.getMyData();
-    private final PyObject mainModule = myData.getMainModule();
 
     // Recycler View Components
     // -> Idols Grid List
@@ -82,6 +89,7 @@ public class IdolsFragment extends Fragment
     private BottomSheetDialog bottomSheetDialog_Profile;
     private AppCompatImageButton cancelBtn_Profile;
     private ImageView faceIV;
+    private MaterialCardView faceCard;
     private TextView stageNameTV, realNameTV, groupTV, entertainmentTV,
             ageTV, heightTV, weightTV, bloodTypeTV, nationalityTV;
     private BottomSheetBehavior bottomSheetDialogBehavior_Profile;
@@ -91,10 +99,12 @@ public class IdolsFragment extends Fragment
     private BottomSheetBehavior bottomSheetDialogBehavior_Filters;
     private AppCompatImageButton cancelBtn_Filters;
 
-
     // Search & Filter Views
     EditText searchIdolsET;
     MaterialButton filterBtn;
+
+    // Firebase
+    DatabaseReference kpopIdols = FirebaseDatabase.getInstance().getReference("Kpop_Idols");
 
     // ===========================================================================================
     @Override
@@ -118,12 +128,15 @@ public class IdolsFragment extends Fragment
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_idols, container, false);
+        // Bottom Sheets
         initModalBottomSheet_Profile();
-        initModalBottomSheet_Filters();
-        initRVComponents(view);
         cancelBtn_Profile.setOnClickListener(this::onClick);
+        initModalBottomSheet_Filters();
         cancelBtn_Filters.setOnClickListener(this::onClick);
-        initViews(view);
+        // Recycler View Components
+        initRVComponents(view);
+        // Search & Filter Components
+        initSearchAndFilterViews(view);
         filterBtn.setOnClickListener(this::onClick);
         return view;
     }
@@ -143,6 +156,18 @@ public class IdolsFragment extends Fragment
 
                         populateIdols();
 
+                        // Set Image Url of Each Idol Stored in List
+                        if (!idolList.isEmpty()) {
+                            retrieveIdolFaces();
+                        }
+
+                        // Check for Internet Connection
+//                        if () {
+//
+//                        }
+                        // Persist All Idols Data
+                        myData.setAllIdols(idolList);
+
                         break;
                     }
                 }
@@ -158,28 +183,46 @@ public class IdolsFragment extends Fragment
         Log.e(TAG, "onHiddenChanged: hidden? " + hidden);
         PyObject mainModule = myData.getMainModule();
         if (!hidden && mainModule != null) {
-            populateIdols();
+            Thread reloadAllIdols = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    populateIdols();
+                    // Check for Internet Connection
+//                        if () {
+//
+//                        }
+                }
+
+            });
+            reloadAllIdols.start();
         }
     }
 
     // ===========================================================================================
     private void populateIdols() {
-        PyObject mainModule = myData.getMainModule();
-        PyObject idols = mainModule.callAttr("get_all_idols");
-        List<PyObject> idolsList = idols.asList();
-        Log.e(TAG, "Size: " + idolsList.size());
-        Log.e(TAG, idolsList.toString());
+        // Get All Idols from CSV
+        if (myData.getAllIdols() == null) {
+            PyObject mainModule = myData.getMainModule();
+            PyObject idols = mainModule.callAttr("get_all_idols");
+            List<PyObject> idolsList = idols.asList();
+            Log.e(TAG, "Size: " + idolsList.size());
+            Log.e(TAG, idolsList.toString());
 
-        idolList.clear();
-        // Add Idols
-        for (PyObject faveIdol: idolsList) {
-            List<PyObject> faveIdolValues = faveIdol.asList();
-            String id = faveIdolValues.get(0).toInt() + "";
-            String stageName = faveIdolValues.get(1).toString();
-            String groupName = faveIdolValues.get(2).toString();
-            boolean isFavorite = faveIdolValues.get(3).toBoolean();
-            Idol idol = new Idol(id, stageName, groupName, isFavorite);
-            idolList.add(idol);
+            idolList.clear();
+            // Add Idols
+            for (PyObject faveIdol: idolsList) {
+                List<PyObject> faveIdolValues = faveIdol.asList();
+                String id = faveIdolValues.get(0).toInt() + "";
+                String stageName = faveIdolValues.get(1).toString();
+                String groupName = faveIdolValues.get(2).toString();
+                boolean isFavorite = faveIdolValues.get(3).toBoolean();
+                Idol idol = new Idol(id, stageName, groupName, isFavorite);
+                idolList.add(idol);
+            }
+        }
+        // Get the Saved Data
+        else {
+            idolList = myData.getAllIdols();
         }
         // Update List Recycler View
         if (idolList.size() > 0) {
@@ -187,143 +230,15 @@ public class IdolsFragment extends Fragment
         }
     }
 
-    // ===========================================================================================
-    private void initViews(View view) {
-        // Search & Filter
-        searchIdolsET = view.findViewById(R.id.search_idols_edit_text);
-        filterBtn = view.findViewById(R.id.filter_button);
-        searchIdolsET.addTextChangedListener(this);
-        searchIdolsET.setOnClickListener(this::onClick);
-        searchIdolsET.setOnKeyListener(this);
-    }
-
-    private void initRVComponents(View view) {
-        // Recycler View Components
-        GridLayoutManager layoutManager_IdolList = new GridLayoutManager(getContext(), 2);
-        GridLayoutManager layoutManager_SNSList = new GridLayoutManager(getContext(), 1, RecyclerView.HORIZONTAL, false);
-        GridLayoutManager layoutManager_RoleList = new GridLayoutManager(getContext(), 1, RecyclerView.HORIZONTAL, false);
-        // -> Idol Grid List
-        idolRV = view.findViewById(R.id.idols_recycler_view);
-        idolRV.setAdapter(idolListAdapterRV);
-        idolRV.setLayoutManager(layoutManager_IdolList);
-        idolListAdapterRV.setOnItemCheckedChangeListener(this::onCheckedChange);
-        idolListAdapterRV.setOnItemClickedListener(this::onItemClicked);
-        // -> Idol Roles
-        roleRV = bottomSheetDialog_Profile.findViewById(R.id.roles_recycler_view);
-        roleRV.setAdapter(rolesListAdapterRV);
-        roleRV.setLayoutManager(layoutManager_RoleList);
-        // -> Idol SNS
-        snsRV = bottomSheetDialog_Profile.findViewById(R.id.sns_recycler_view);
-        snsRV.setAdapter(snsListAdapterRV);
-        snsRV.setLayoutManager(layoutManager_SNSList);
-        snsListAdapterRV.setOnItemClickListener(this::onItemClick);
-    }
-
-    private void initModalBottomSheet_Profile() {
-        bottomSheetDialog_Profile = new BottomSheetDialog(getContext());
-        bottomSheetDialog_Profile.setContentView(R.layout.modal_bottom_sheet_idol_profile);
-        // Bottom Sheet Views
-        cancelBtn_Profile = bottomSheetDialog_Profile.findViewById(R.id.profile_cancel_button);
-        faceIV = bottomSheetDialog_Profile.findViewById(R.id.face_image_view);
-        stageNameTV = bottomSheetDialog_Profile.findViewById(R.id.stage_name_text_view);
-        realNameTV = bottomSheetDialog_Profile.findViewById(R.id.real_name_text_view);
-        groupTV = bottomSheetDialog_Profile.findViewById(R.id.group_name_text_view);
-        entertainmentTV = bottomSheetDialog_Profile.findViewById(R.id.entertainment_text_view);
-        ageTV = bottomSheetDialog_Profile.findViewById(R.id.age_text_view);
-        weightTV = bottomSheetDialog_Profile.findViewById(R.id.weight_text_view);
-        heightTV = bottomSheetDialog_Profile.findViewById(R.id.height_text_view);
-        bloodTypeTV = bottomSheetDialog_Profile.findViewById(R.id.blood_type_text_view);
-        nationalityTV = bottomSheetDialog_Profile.findViewById(R.id.nationality_text_view);
-        // Bottom Sheet Behavior
-        bottomSheetDialogBehavior_Profile = bottomSheetDialog_Profile.getBehavior();
-        Toast.makeText(getContext(), "Display Height: " + getDisplayHeight(), Toast.LENGTH_SHORT).show();
-        bottomSheetDialogBehavior_Profile.setPeekHeight(getDisplayHeight());
-    }
-
-    private void initModalBottomSheet_Filters() {
-        bottomSheetDialog_Filters = new BottomSheetDialog(getContext());
-        bottomSheetDialog_Filters.setContentView(R.layout.modal_bottom_sheet_filters);
-        // Bottom Sheet Views
-        cancelBtn_Filters = bottomSheetDialog_Filters.findViewById(R.id.filter_cancel_button);
-        // Bottom Sheet Behavior
-        bottomSheetDialogBehavior_Filters = bottomSheetDialog_Filters.getBehavior();
-        Log.e(TAG, "Display Height: " + getDisplayHeight());
-        bottomSheetDialogBehavior_Filters.setPeekHeight(getDisplayHeight());
-    }
-
-    @Override
-    public void onCheckedChange(int position, boolean isChecked, CheckBox favoriteBtn) {
-        if (mainModule != null && favoriteBtn.isPressed()) {
-            // Update Favorite Column of Idol to True OR False
-            String id = idolList.get(position).getId();
-            String boolVal = isChecked ? "True" : "False";
-            PyObject isUpdatedStr = mainModule.callAttr("update_favorite", id, boolVal);
-            boolean isUpdated = isUpdatedStr.toBoolean();
-            Log.e(TAG, "Is Favorites Updated: " + isUpdated);
-
-            // Feedback
-            if (isUpdated) {
-                Snackbar.make(getView(), "You liked this idol.", Snackbar.LENGTH_SHORT)
-                        .setAnchorView(getActivity().findViewById(R.id.custom_bottom_navigation))
-                        .show();
-            }
-        }
-    }
-
-    @Override
-    public void onItemClicked(int position) {
-        if (bottomSheetDialog_Profile != null) {
-            Log.e(TAG, "Bottom Sheet Dialog NOT null");
-            Idol idol = idolList.get(position);
-            populateProfileDialogSheet(idol);
-            bottomSheetDialog_Profile.show();
-        }
-    }
-
-    @Override
-    public void onItemClick(int position) {
-        SNS sns = snsList.get(position);
-        launchInstagram(sns.getUsername());
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.profile_cancel_button:
-                if (bottomSheetDialog_Profile != null) {
-                    bottomSheetDialog_Profile.dismiss();
-                }
-                break;
-            case R.id.filter_cancel_button:
-                if (bottomSheetDialog_Filters != null) {
-                    bottomSheetDialog_Filters.dismiss();
-                }
-                break;
-            case R.id.search_idols_edit_text:
-                Toast.makeText(getContext(), "edit text clicked", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.filter_button:
-                bottomSheetDialog_Filters.show();
-                break;
-        }
-    }
-
-    // ===========================================================================================
-    private int getDisplayHeight() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getActivity()
-                .getWindowManager()
-                .getDefaultDisplay()
-                .getRealMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
-        // int width = displayMetrics.widthPixels;
-        return height;
-    }
-
     private void populateProfileDialogSheet(Idol idol) {
+        PyObject mainModule = myData.getMainModule();
+
         if (mainModule != null) {
             Log.e(TAG, "Main Module NOT null");
             String id = idol.getId();
+
+            // Face Image
+            updateIdolFaceImage(idol.getImageUrl());
 
             // long start = System.nanoTime();
             PyObject profile = mainModule.callAttr("get_idol_profile", id);
@@ -398,11 +313,149 @@ public class IdolsFragment extends Fragment
                 }
                 snsList.add(new SNS(groupIG, "Group IG"));
                 snsListAdapterRV.notifyDataSetChanged();
-
             }
         } else {
             Log.e(TAG, "Main Module NULL");
         }
+    }
+
+    // ===========================================================================================
+    private void initSearchAndFilterViews(View view) {
+        // Search & Filter
+        searchIdolsET = view.findViewById(R.id.search_idols_edit_text);
+        filterBtn = view.findViewById(R.id.filter_button);
+        searchIdolsET.addTextChangedListener(this);
+        searchIdolsET.setOnClickListener(this::onClick);
+        searchIdolsET.setOnKeyListener(this);
+    }
+
+    private void initRVComponents(View view) {
+        // Recycler View Components
+        GridLayoutManager layoutManager_IdolList = new GridLayoutManager(getContext(), 2);
+        GridLayoutManager layoutManager_SNSList = new GridLayoutManager(getContext(), 1, RecyclerView.HORIZONTAL, false);
+        GridLayoutManager layoutManager_RoleList = new GridLayoutManager(getContext(), 1, RecyclerView.HORIZONTAL, false);
+        // -> Idol Grid List
+        idolRV = view.findViewById(R.id.idols_recycler_view);
+        idolRV.setAdapter(idolListAdapterRV);
+        idolRV.setLayoutManager(layoutManager_IdolList);
+        idolListAdapterRV.setOnItemCheckedChangeListener(this::onCheckedChange);
+        idolListAdapterRV.setOnItemClickedListener(this::onItemClicked);
+        // -> Idol Roles
+        roleRV = bottomSheetDialog_Profile.findViewById(R.id.roles_recycler_view);
+        roleRV.setAdapter(rolesListAdapterRV);
+        roleRV.setLayoutManager(layoutManager_RoleList);
+        // -> Idol SNS
+        snsRV = bottomSheetDialog_Profile.findViewById(R.id.sns_recycler_view);
+        snsRV.setAdapter(snsListAdapterRV);
+        snsRV.setLayoutManager(layoutManager_SNSList);
+        snsListAdapterRV.setOnItemClickListener(this::onItemClick);
+    }
+
+    private void initModalBottomSheet_Profile() {
+        bottomSheetDialog_Profile = new BottomSheetDialog(getContext());
+        bottomSheetDialog_Profile.setContentView(R.layout.modal_bottom_sheet_idol_profile);
+        // Bottom Sheet Views
+        cancelBtn_Profile = bottomSheetDialog_Profile.findViewById(R.id.profile_cancel_button);
+        faceIV = bottomSheetDialog_Profile.findViewById(R.id.face_image_view);
+        faceCard = bottomSheetDialog_Profile.findViewById(R.id.face_image_card_view);
+        stageNameTV = bottomSheetDialog_Profile.findViewById(R.id.stage_name_text_view);
+        realNameTV = bottomSheetDialog_Profile.findViewById(R.id.real_name_text_view);
+        groupTV = bottomSheetDialog_Profile.findViewById(R.id.group_name_text_view);
+        entertainmentTV = bottomSheetDialog_Profile.findViewById(R.id.entertainment_text_view);
+        ageTV = bottomSheetDialog_Profile.findViewById(R.id.age_text_view);
+        weightTV = bottomSheetDialog_Profile.findViewById(R.id.weight_text_view);
+        heightTV = bottomSheetDialog_Profile.findViewById(R.id.height_text_view);
+        bloodTypeTV = bottomSheetDialog_Profile.findViewById(R.id.blood_type_text_view);
+        nationalityTV = bottomSheetDialog_Profile.findViewById(R.id.nationality_text_view);
+        // Bottom Sheet Behavior
+        bottomSheetDialogBehavior_Profile = bottomSheetDialog_Profile.getBehavior();
+        // Toast.makeText(getContext(), "Display Height: " + getDisplayHeight(), Toast.LENGTH_SHORT).show();
+        bottomSheetDialogBehavior_Profile.setPeekHeight(getDisplayHeight());
+    }
+
+    private void initModalBottomSheet_Filters() {
+        bottomSheetDialog_Filters = new BottomSheetDialog(getContext());
+        bottomSheetDialog_Filters.setContentView(R.layout.modal_bottom_sheet_filters);
+        // Bottom Sheet Views
+        cancelBtn_Filters = bottomSheetDialog_Filters.findViewById(R.id.filter_cancel_button);
+        // Bottom Sheet Behavior
+        bottomSheetDialogBehavior_Filters = bottomSheetDialog_Filters.getBehavior();
+        Log.e(TAG, "Display Height: " + getDisplayHeight());
+        bottomSheetDialogBehavior_Filters.setPeekHeight(getDisplayHeight());
+    }
+
+    // ===========================================================================================
+    @Override
+    public void onCheckedChange(int position, boolean isChecked, CheckBox favoriteBtn) {
+        PyObject mainModule = myData.getMainModule();
+        if (mainModule != null && favoriteBtn.isPressed()) {
+            // Update Favorite Column of Idol to True OR False
+            String id = idolList.get(position).getId();
+            String boolVal = isChecked ? "True" : "False";
+            PyObject isUpdatedStr = mainModule.callAttr("update_favorite", id, boolVal);
+            boolean isUpdated = isUpdatedStr.toBoolean();
+            Log.e(TAG, "Is Favorites Updated: " + isUpdated);
+
+            // Feedback
+            if (isUpdated) {
+                Snackbar.make(getView(), "You liked this idol.", Snackbar.LENGTH_SHORT)
+                        .setAnchorView(getActivity().findViewById(R.id.custom_bottom_navigation))
+                        .show();
+            }
+        }
+    }
+
+    // Idol onClick
+    @Override
+    public void onItemClicked(int position) {
+        if (bottomSheetDialog_Profile != null) {
+            Log.e(TAG, "Bottom Sheet Dialog NOT null");
+            Idol idol = idolList.get(position);
+            // Get from CSV
+            populateProfileDialogSheet(idol);
+            bottomSheetDialog_Profile.show();
+        }
+    }
+
+    // SNS onClick
+    @Override
+    public void onItemClick(int position) {
+        SNS sns = snsList.get(position);
+        launchInstagram(sns.getUsername());
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.profile_cancel_button:
+                if (bottomSheetDialog_Profile != null) {
+                    bottomSheetDialog_Profile.dismiss();
+                }
+                break;
+            case R.id.filter_cancel_button:
+                if (bottomSheetDialog_Filters != null) {
+                    bottomSheetDialog_Filters.dismiss();
+                }
+                break;
+            case R.id.search_idols_edit_text:
+                Toast.makeText(getContext(), "edit text clicked", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.filter_button:
+                bottomSheetDialog_Filters.show();
+                break;
+        }
+    }
+
+    // ===========================================================================================
+    private int getDisplayHeight() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity()
+                .getWindowManager()
+                .getDefaultDisplay()
+                .getRealMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        // int width = displayMetrics.widthPixels;
+        return height;
     }
 
     private int calculateAge(String birthDateStr) {
@@ -410,16 +463,13 @@ public class IdolsFragment extends Fragment
             // dd/mm/yyyy
             String[] dates =  birthDateStr.split("/");
 
-            int year = Integer.parseInt(dates[2]);
+            int birthYear = Integer.parseInt(dates[2]);
             int monthOfYear = Integer.parseInt(dates[1]);
             int dayOfMonth = Integer.parseInt(dates[0]);
 
-            // API Level 26 (Oreo) and above
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                LocalDate birthDate = LocalDate.of(year, monthOfYear, dayOfMonth);
-                LocalDate curDate = LocalDate.now();
-                return Period.between(birthDate, curDate).getYears();
-            }
+            LocalDate birthDate = LocalDate.of(birthYear, monthOfYear, dayOfMonth);
+            LocalDate curDate = LocalDate.now();
+            return Period.between(birthDate, curDate).getYears();
         }
         return 0;
     }
@@ -429,7 +479,6 @@ public class IdolsFragment extends Fragment
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         startActivity(intent);
     }
-
 
     // ===========================================================================================
     // Text Watcher Methods
@@ -467,6 +516,54 @@ public class IdolsFragment extends Fragment
             public void run() {
                 idolListAdapterRV.notifyDataSetChanged();
             }
+        });
+    }
+
+    private void updateIdolFaceImage(String imageUrl) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (imageUrl != null) {
+                    Glide.with(getContext()).load(imageUrl).into(faceIV);
+                    faceCard.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
+                } else {
+                    Glide.with(getContext()).clear(faceIV);
+                    faceCard.setOutlineProvider(null);
+                }
+            }
+        });
+    }
+
+    // ===========================================================================================
+    private void retrieveIdolFaces() {
+
+        Log.e(TAG, "retrieveIdolFaces: In");
+        kpopIdols.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Log.e(TAG, "onDataChange: In");
+                for (DataSnapshot dataSnapshot: snapshot.getChildren()) {
+                    String idolId = dataSnapshot.getKey();
+                    String idolImageUrl = dataSnapshot.child("Image_Url").getValue(String.class);
+                    String idolStageName = dataSnapshot.child("Stage_Name").getValue(String.class);
+                    Log.e(TAG, "onDataChange: " + "\n" +
+                            "Idol ID: " + idolId + "\n" +
+                            "Idol Image Url: " + idolImageUrl + "\n" +
+                            "Idol Stage Name: " + idolStageName);
+                    int idolIndex = Integer.parseInt(idolId) - 1;
+                    Log.e(TAG, "onDataChange: idolIndex - " + idolIndex);
+                    Idol idol = idolList.get(idolIndex);
+                    idol.setImageUrl(idolImageUrl);
+                    Log.e(TAG, "onDataChange: " + idol.getImageUrl());
+                }
+                updateIdolListAdapter();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "onCancelled: " + error);
+            }
+
         });
     }
 

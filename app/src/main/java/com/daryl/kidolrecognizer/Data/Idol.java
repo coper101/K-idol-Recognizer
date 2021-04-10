@@ -5,7 +5,8 @@ import java.util.ArrayList;
 public class Idol {
 
     private String id, stageName, realName, group, entertainment,
-            age, height, weight, bloodType, nationality;
+            age, height, weight, bloodType, nationality,
+            imageUrl;
     private boolean isFavorite;
     private ArrayList<Role> roles;
     private ArrayList<SNS> snsList;
@@ -144,4 +145,12 @@ public class Idol {
         this.snsList = snsList;
     }
 
-}
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+} // end of class

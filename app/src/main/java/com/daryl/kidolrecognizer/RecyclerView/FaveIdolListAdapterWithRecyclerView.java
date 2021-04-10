@@ -5,6 +5,7 @@ import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -16,6 +17,7 @@ import androidx.annotation.RequiresApi;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.daryl.kidolrecognizer.Data.Idol;
 import com.daryl.kidolrecognizer.R;
 import com.google.android.material.card.MaterialCardView;
@@ -29,6 +31,7 @@ public class FaveIdolListAdapterWithRecyclerView
     private final Context context;
     private final int layoutResId;
     private OnItemCheckedChangeListener myListener;
+    private OnItemClickedListener myClickedListener;
 
     public FaveIdolListAdapterWithRecyclerView(List<Idol> idolList, Context context, int layoutResId) {
         this.idolList = idolList;
@@ -36,6 +39,7 @@ public class FaveIdolListAdapterWithRecyclerView
         this.layoutResId = layoutResId;
     }
 
+    // Track Changes in State of Checkbox Button
     public interface OnItemCheckedChangeListener {
         void onCheckedChange(int position, boolean isChecked);
     }
@@ -44,11 +48,20 @@ public class FaveIdolListAdapterWithRecyclerView
         myListener = onItemCheckedChangeListener;
     }
 
+    // Track Item View is Clicked
+    public void setOnItemClickedListener(OnItemClickedListener onItemClickedListener) {
+        myClickedListener = onItemClickedListener;
+    }
+
+    public interface OnItemClickedListener {
+        void onItemClicked(int position);
+    }
+
     @NonNull
     @Override
     public IdolViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(layoutResId, parent, false);
-        return new IdolViewHolder(view, myListener);
+        return new IdolViewHolder(view, myListener, myClickedListener);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -75,7 +88,20 @@ public class FaveIdolListAdapterWithRecyclerView
         holder.idolStageName.setText(idol.getStageName());
         holder.idolGroupName.setText(idol.getGroup());
         holder.idolFaveButton.setChecked(true);
+
+        // Set Idol Image Using Url (Glide)
+        String idolImageUrl = idol.getImageUrl();
+        ImageView idolFaceIV = holder.idolFaceIV;
+        if (idolImageUrl != null) {
+            Glide.with(context).load(idolImageUrl).into(idolFaceIV);
+            holder.idolFaceCard.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
+        } else {
+            Glide.with(context).clear(idolFaceIV);
+            holder.idolFaceCard.setOutlineProvider(null);
+        }
     }
+
+
 
     private int toPx(int dp) {
         float density = context.getResources().getDisplayMetrics().density;
@@ -92,20 +118,24 @@ public class FaveIdolListAdapterWithRecyclerView
     static class IdolViewHolder extends RecyclerView.ViewHolder {
 
         ImageView idolFaceIV;
-        MaterialCardView idolFaceCard;
+        MaterialCardView faveIdolCard, idolFaceCard;
         TextView idolRanking, idolStageName, idolGroupName;
         CheckBox idolFaveButton;
         LinearLayout faveItemView;
 
-        public IdolViewHolder(@NonNull View itemView, final OnItemCheckedChangeListener listener) {
+        public IdolViewHolder(@NonNull View itemView,
+                              final OnItemCheckedChangeListener listener,
+                              final OnItemClickedListener clickedListener) {
             super(itemView);
             faveItemView = itemView.findViewById(R.id.idol_fave_item_view);
+            faveIdolCard = itemView.findViewById(R.id.fave_idol_card_view);
             idolRanking = itemView.findViewById(R.id.idol_ranking);
             idolFaceIV = itemView.findViewById(R.id.idol_face_image_view);
             idolFaceCard = itemView.findViewById(R.id.idol_face_card_view);
             idolStageName = itemView.findViewById(R.id.idol_stage_name_text_view);
             idolGroupName = itemView.findViewById(R.id.idol_group_name_text_view);
             idolFaveButton = itemView.findViewById(R.id.idol_favorite_button);
+
             idolFaveButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -116,7 +146,19 @@ public class FaveIdolListAdapterWithRecyclerView
                     }
                 }
             });
-        }
-    }
 
-}
+            faveIdolCard.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (clickedListener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION)
+                            clickedListener.onItemClicked(position);
+                    }
+                }
+            });
+
+        }
+    } // end of view holder class
+
+} // end of class

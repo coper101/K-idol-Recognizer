@@ -10,7 +10,8 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/app_bar_height"
-        android:paddingLeft="14dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
         android:background="@color/space_gray"
         app:elevation="0dp">
         <TextView
@@ -77,7 +78,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="38dp"
-                android:text="View My Gallery"
+                android:text="@string/view_my_gallery"
                 android:paddingVertical="15dp"
                 android:paddingHorizontal="30dp"
                 android:layout_gravity="center"

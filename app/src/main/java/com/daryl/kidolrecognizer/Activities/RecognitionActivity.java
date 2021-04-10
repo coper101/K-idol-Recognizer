@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -78,6 +79,7 @@ public class RecognitionActivity extends AppCompatActivity
     private RecyclerView snsRV;
 
     // Views
+    private NestedScrollView idolProfileSV;
      private TextView
             stageNameTV, realNameTV,
             groupNameTV, entTV,
@@ -192,6 +194,7 @@ public class RecognitionActivity extends AppCompatActivity
         // Recognizer Message
         mainView = findViewById(R.id.main_view);
         // Description
+        idolProfileSV = findViewById(R.id.idol_profile_scroll_view);
         stageNameTV = findViewById(R.id.stage_name_text_view);
         realNameTV = findViewById(R.id.real_name_text_view);
         faceIV = findViewById(R.id.face_image_view);
@@ -269,8 +272,10 @@ public class RecognitionActivity extends AppCompatActivity
                 setImageViewNoMatch();
                 updateOutlineProvider(1);
                 bottomSheetBehavior.setDraggable(false);
+                updateIdolProfileScroll(false);
             } else {
                 bottomSheetBehavior.setDraggable(true);
+                updateIdolProfileScroll(true);
             }
 
             for (PyObject IdAndBboxE: stageNameAndBboxList) {
@@ -498,6 +503,15 @@ public class RecognitionActivity extends AppCompatActivity
         });
     }
 
+    private void updateIdolProfileScroll(boolean isEnabled) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                idolProfileSV.setNestedScrollingEnabled(isEnabled);
+            }
+        });
+    };
+
     // ===========================================================================================
     private String encodeBitmapImage(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -613,22 +627,21 @@ public class RecognitionActivity extends AppCompatActivity
     }
 
     // ===========================================================================================
-    // Reference: https://www.candidjava.com/tutorial/java-program-to-calculate-age-from-date-of-birth/
+    // References:
+    // https://www.candidjava.com/tutorial/java-program-to-calculate-age-from-date-of-birth/
+    // https://developer.android.com/studio/write/java8-support#library-desugaring
     private int calculateAge(String birthDateStr) {
         if (!birthDateStr.isEmpty()) {
             // dd/mm/yyyy
             String[] dates =  birthDateStr.split("/");
 
-            int year = Integer.parseInt(dates[2]);
+            int birthYear = Integer.parseInt(dates[2]);
             int monthOfYear = Integer.parseInt(dates[1]);
             int dayOfMonth = Integer.parseInt(dates[0]);
 
-            // API Level 26 (Oreo) and above
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                LocalDate birthDate = LocalDate.of(year, monthOfYear, dayOfMonth);
-                LocalDate curDate = LocalDate.now();
-                return Period.between(birthDate, curDate).getYears();
-            }
+            LocalDate birthDate = LocalDate.of(birthYear, monthOfYear, dayOfMonth);
+            LocalDate curDate = LocalDate.now();
+            return Period.between(birthDate, curDate).getYears();
         }
         return 0;
     }
@@ -773,7 +786,6 @@ public class RecognitionActivity extends AppCompatActivity
         // Change Recognizer Button Ripple Color
         backBtn.setBackground(drawables.get(randNum));
     }
-
 
 
 } // <--  end of RecognitionActivity Class -->

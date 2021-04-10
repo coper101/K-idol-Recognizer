@@ -150,13 +150,13 @@
 
     <com.google.android.material.bottomappbar.BottomAppBar
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="@dimen/bottom_bar_height"
         android:layout_gravity="bottom"
         android:backgroundTint="@color/space_gray">
 
         <com.google.android.material.button.MaterialButton
             android:layout_width="match_parent"
-            android:layout_height="58dp"
+            android:layout_height="@dimen/bottom_bar_button_height"
             android:text="Apply"
             android:layout_marginHorizontal="30dp"
             style="@style/ButtonBottomBar"/>

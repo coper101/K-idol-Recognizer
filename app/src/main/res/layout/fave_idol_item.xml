@@ -24,6 +24,7 @@
 
 
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/fave_idol_card_view"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_marginStart="14dp"
@@ -56,7 +57,8 @@
                     <ImageView
                         android:id="@+id/idol_face_image_view"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"/>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
@@ -64,6 +66,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2.5"
+                android:layout_marginLeft="10dp"
                 android:orientation="vertical">
                 <!-- Idol Stage Name -->
                 <TextView

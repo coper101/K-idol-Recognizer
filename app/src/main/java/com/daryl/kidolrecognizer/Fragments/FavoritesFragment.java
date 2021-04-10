@@ -1,34 +1,62 @@
 package com.daryl.kidolrecognizer.Fragments;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.chaquo.python.PyObject;
 import com.daryl.kidolrecognizer.Activities.HomeActivity;
 import com.daryl.kidolrecognizer.Data.Idol;
 import com.daryl.kidolrecognizer.Data.MyData;
+import com.daryl.kidolrecognizer.Data.Role;
+import com.daryl.kidolrecognizer.Data.SNS;
 import com.daryl.kidolrecognizer.R;
 import com.daryl.kidolrecognizer.RecyclerView.FaveIdolListAdapterWithRecyclerView;
+import com.daryl.kidolrecognizer.RecyclerView.RolesListAdapterWithRecyclerView;
+import com.daryl.kidolrecognizer.RecyclerView.SNSListAdapterWithRecyclerView;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-public class FavoritesFragment extends Fragment implements View.OnClickListener {
+public class FavoritesFragment extends Fragment
+        implements
+        View.OnClickListener,
+        FaveIdolListAdapterWithRecyclerView.OnItemCheckedChangeListener,
+        FaveIdolListAdapterWithRecyclerView.OnItemClickedListener,
+        SNSListAdapterWithRecyclerView.OnItemClickListener{
 
     private static final String TAG = FavoritesFragment.class.getSimpleName();
 
@@ -36,10 +64,20 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
     private final MyData myData = MyData.getMyData();
 
     // Recycler View Components
+    // -> Favorite Idols
     private FaveIdolListAdapterWithRecyclerView faveIdolsAdapterRV;
     private ArrayList<Idol> faveIdolList;
     private RecyclerView faveIdolsRV;
-    private LinearLayoutManager layoutManager;
+
+    // -> Idol Roles
+    private RolesListAdapterWithRecyclerView rolesListAdapterRV;
+    private ArrayList<Role> roleList;
+    private RecyclerView roleRV;
+
+    // -> Idol SNS
+    private SNSListAdapterWithRecyclerView snsListAdapterRV;
+    private ArrayList<SNS> snsList;
+    private RecyclerView snsRV;
 
     // Rearranging List Items
     private final ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new TouchHelper());
@@ -49,6 +87,18 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
     private MaterialButton galleryLinkBtn, rearrangeBtn;
     private LinearLayout rearrangeContainer;
 
+    // Bottom Sheet Dialog
+    // -> Idol Profile
+    private BottomSheetDialog bottomSheetDialog_Profile;
+    private AppCompatImageButton cancelBtn_Profile;
+    private ImageView faceIV;
+    private TextView stageNameTV, realNameTV, groupTV, entertainmentTV,
+            ageTV, heightTV, weightTV, bloodTypeTV, nationalityTV;
+    private BottomSheetBehavior bottomSheetDialogBehavior_Profile;
+
+    // Firebase
+    DatabaseReference kpopIdols = FirebaseDatabase.getInstance().getReference("Kpop_Idols");
+
     // ===========================================================================================
     // Unable to Access Views here
     @Override
@@ -56,9 +106,15 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
         super.onCreate(savedInstanceState);
         Log.e(TAG, "onCreate");
         // Initialize Recycle View Components
+        // -> Favorite Idols
         faveIdolList = new ArrayList<>();
         faveIdolsAdapterRV = new FaveIdolListAdapterWithRecyclerView(faveIdolList, getContext(), R.layout.fave_idol_item);
-        layoutManager = new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false);
+        // -> Idol Roles
+        roleList = new ArrayList<>();
+        rolesListAdapterRV = new RolesListAdapterWithRecyclerView(roleList, getContext(), R.layout.role_item);
+        // -> Idol SNS
+        snsList = new ArrayList<>();
+        snsListAdapterRV = new SNSListAdapterWithRecyclerView(snsList, getContext(), R.layout.sns_item);
     }
 
     // ===========================================================================================
@@ -67,47 +123,15 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.e(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_favorites, container, false);
-        // Recycler View Components
-        faveIdolsRV = view.findViewById(R.id.favorite_idols_recycler_view);
-        faveIdolsRV.setAdapter(faveIdolsAdapterRV);
-        faveIdolsRV.setLayoutManager(layoutManager);
-        faveIdolsAdapterRV.setOnItemCheckedChangeListener(new FaveIdolListAdapterWithRecyclerView.OnItemCheckedChangeListener() {
-            @Override
-            public void onCheckedChange(int position, boolean isChecked) {
-
-                if (!isChecked) {
-                    Toast.makeText(getContext(), "Unchecked", Toast.LENGTH_SHORT).show();
-
-                    PyObject mainModule = myData.getMainModule();
-                    if (mainModule != null) {
-
-                        // Update Favorite Column of Idol to False
-                        String id = faveIdolList.get(position).getId();
-                        String boolVal = "False";
-                        PyObject isUpdatedStr = mainModule.callAttr("update_favorite", id, boolVal);
-                        boolean isUpdated = isUpdatedStr.toBoolean();
-                        Log.e(TAG, "Is Favorites Updated: " + isUpdated);
-
-                        // Remove Idol from List Recycler View
-                        faveIdolList.remove(position);
-                        faveIdolsAdapterRV.notifyDataSetChanged();
-                        Snackbar.make(getView(), "Removed from Favorites.", Snackbar.LENGTH_SHORT)
-                                .setAnchorView(getActivity().findViewById(R.id.custom_bottom_navigation))
-                                .show();
-                        showEmptyIllustration();
-
-                    } // end of checking main module is not null
-
-                } // end of checking is not checked
-
-            } // end of onCheckedChange
-        });
         // Empty Illustration
-        emptyFaveIllus = view.findViewById(R.id.empty_favorites_illustration);
-        galleryLinkBtn = view.findViewById(R.id.gallery_link_button);
-        rearrangeContainer = view.findViewById(R.id.rearrange_box);
-        rearrangeBtn = view.findViewById(R.id.rearrange_button);
-        rearrangeBtn.setOnClickListener(this);
+        initEmptyIllusComponents(view);
+        // Rearranging Fave Idols Components
+        initRearrangingFavesComponents(view);
+        // Bottom Sheet
+        initModalBottomSheet_Profile();
+        cancelBtn_Profile.setOnClickListener(this::onClick);
+        // Recycler View Components
+        initRVComponents(view);
         return view;
     }
 
@@ -132,6 +156,11 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
 
                         // Populate List Recycler View
                         populateFavoriteIdols();
+
+                        // Set Image Url of Each Idol Stored in List
+                        if (!faveIdolList.isEmpty()) {
+                            retrieveIdolFaces();
+                        }
 
                         break;
                     }
@@ -169,10 +198,156 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
             Log.e(TAG, "onHiddenChanged: Main Module is NOT null");
             // Populate List Recycler View
             populateFavoriteIdols();
+            // Set Image Url of Each Idol Stored in List
+            if (!faveIdolList.isEmpty()) {
+                retrieveIdolFaces();
+            }
         }
     }
 
     // ===========================================================================================
+    private void initEmptyIllusComponents(View view) {
+        emptyFaveIllus = view.findViewById(R.id.empty_favorites_illustration);
+        galleryLinkBtn = view.findViewById(R.id.gallery_link_button);
+    }
+
+    private void initRearrangingFavesComponents(View view) {
+        rearrangeContainer = view.findViewById(R.id.rearrange_box);
+        rearrangeBtn = view.findViewById(R.id.rearrange_button);
+        rearrangeBtn.setOnClickListener(this);
+    }
+
+    private void initRVComponents(View view) {
+        // Recycler View Components
+        LinearLayoutManager layoutManager_faveIdolList = new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false);
+        GridLayoutManager layoutManager_SNSList = new GridLayoutManager(getContext(), 1, RecyclerView.HORIZONTAL, false);
+        GridLayoutManager layoutManager_RoleList = new GridLayoutManager(getContext(), 1, RecyclerView.HORIZONTAL, false);
+        // -> Idol Grid List
+        faveIdolsRV = view.findViewById(R.id.favorite_idols_recycler_view);
+        faveIdolsRV.setAdapter(faveIdolsAdapterRV);
+        faveIdolsRV.setLayoutManager(layoutManager_faveIdolList);
+        faveIdolsAdapterRV.setOnItemCheckedChangeListener(this::onCheckedChange);
+        faveIdolsAdapterRV.setOnItemClickedListener(this::onItemClicked);
+        // -> Idol Roles
+        roleRV = bottomSheetDialog_Profile.findViewById(R.id.roles_recycler_view);
+        roleRV.setAdapter(rolesListAdapterRV);
+        roleRV.setLayoutManager(layoutManager_RoleList);
+        // -> Idol SNS
+        snsRV = bottomSheetDialog_Profile.findViewById(R.id.sns_recycler_view);
+        snsRV.setAdapter(snsListAdapterRV);
+        snsRV.setLayoutManager(layoutManager_SNSList);
+        snsListAdapterRV.setOnItemClickListener(this::onItemClick);
+    }
+
+    private void initModalBottomSheet_Profile() {
+        bottomSheetDialog_Profile = new BottomSheetDialog(getContext());
+        bottomSheetDialog_Profile.setContentView(R.layout.modal_bottom_sheet_idol_profile);
+        // Bottom Sheet Views
+        cancelBtn_Profile = bottomSheetDialog_Profile.findViewById(R.id.profile_cancel_button);
+        faceIV = bottomSheetDialog_Profile.findViewById(R.id.face_image_view);
+        stageNameTV = bottomSheetDialog_Profile.findViewById(R.id.stage_name_text_view);
+        realNameTV = bottomSheetDialog_Profile.findViewById(R.id.real_name_text_view);
+        groupTV = bottomSheetDialog_Profile.findViewById(R.id.group_name_text_view);
+        entertainmentTV = bottomSheetDialog_Profile.findViewById(R.id.entertainment_text_view);
+        ageTV = bottomSheetDialog_Profile.findViewById(R.id.age_text_view);
+        weightTV = bottomSheetDialog_Profile.findViewById(R.id.weight_text_view);
+        heightTV = bottomSheetDialog_Profile.findViewById(R.id.height_text_view);
+        bloodTypeTV = bottomSheetDialog_Profile.findViewById(R.id.blood_type_text_view);
+        nationalityTV = bottomSheetDialog_Profile.findViewById(R.id.nationality_text_view);
+        // Bottom Sheet Behavior
+        bottomSheetDialogBehavior_Profile = bottomSheetDialog_Profile.getBehavior();
+        // Toast.makeText(getContext(), "Display Height: " + getDisplayHeight(), Toast.LENGTH_SHORT).show();
+        bottomSheetDialogBehavior_Profile.setPeekHeight(getDisplayHeight());
+    }
+
+    // ===========================================================================================
+    private void populateProfileDialogSheet(Idol idol) {
+        PyObject mainModule = myData.getMainModule();
+
+        if (mainModule != null) {
+            Log.e(TAG, "Main Module NOT null");
+            String id = idol.getId();
+
+            // long start = System.nanoTime();
+            PyObject profile = mainModule.callAttr("get_idol_profile", id);
+            // long end = System.nanoTime();
+            // Log.e(TAG, "Time Taken to get Profile Values: " + ((end - start) / 1000000000) +
+            // " seconds" + "\n" + "Difference in Nano: " + (end - start));
+            // Log.e(TAG, profile.toString());
+            Map<PyObject, PyObject> profileValues = profile.asMap();
+
+            if (!profileValues.isEmpty()) {
+
+                // Stage Name
+                String stageName = profileValues.get("Stage Name").toString();
+                stageNameTV.setText(stageName);
+
+                // Real Name
+                String realName = profileValues.get("Real Name (Korean)").toString();
+                realNameTV.setText(realName);
+
+                // Group Name
+                String group = profileValues.get("Group Name").toString();
+                groupTV.setText(group);
+
+                // Entertainment
+                String entertainment = profileValues.get("Entertainment").toString();
+                entertainmentTV.setText(entertainment);
+
+                // Roles
+                String rolesString = profileValues.get("Roles").toString();
+                String[] rolesSeparated = rolesString.split(", ");
+                roleList.clear();
+                for (String role: rolesSeparated) {
+                    Role roleObject = new Role(role);
+                    roleList.add(roleObject);
+                }
+                // Log.e(TAG, Arrays.toString(rolesSeparated));
+                rolesListAdapterRV.notifyDataSetChanged();
+
+                // Stats
+                // -> Age
+                String birthDateStr = profileValues.get("Birth Date").toString();
+                // Log.e(TAG, birthDateStr);
+                int age = 0;
+                if (!birthDateStr.equalsIgnoreCase("nan")) {
+                    age = calculateAge(birthDateStr);
+                    ageTV.setText(age + "");
+                }
+
+                // -> Height
+                String height = profileValues.get("Height").toString() + " cm";
+                heightTV.setText(height);
+
+                // -> Weight
+                String weight = profileValues.get("Weight").toString() + " kg";
+                weightTV.setText(weight);
+
+                // -> Blood Type
+                String bloodType = profileValues.get("Blood Type").toString();
+                bloodTypeTV.setText("Type " + bloodType);
+
+                // Nationality
+                String nationality = profileValues.get("Nationality").toString();
+                nationalityTV.setText(nationality);
+
+                // SNS
+                String personalIG = profileValues.get("Personal IG").toString();
+                String groupIG = profileValues.get("Group IG").toString();
+                snsList.clear();
+                if (!personalIG.equals("None")) {
+                    SNS personal_ig = new SNS(personalIG, "Personal IG");
+                    snsList.add(personal_ig);
+                }
+                snsList.add(new SNS(groupIG, "Group IG"));
+                snsListAdapterRV.notifyDataSetChanged();
+
+            }
+        } else {
+            Log.e(TAG, "Main Module NULL");
+        }
+    }
+
     private void populateFavoriteIdols() {
         PyObject mainModule = myData.getMainModule();
         PyObject faveIdols = mainModule.callAttr("get_favorite_idols");
@@ -198,6 +373,41 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
         showEmptyIllustration();
     }
 
+    // ===========================================================================================
+    private int getDisplayHeight() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity()
+                .getWindowManager()
+                .getDefaultDisplay()
+                .getRealMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        // int width = displayMetrics.widthPixels;
+        return height;
+    }
+
+    private int calculateAge(String birthDateStr) {
+        if (!birthDateStr.isEmpty()) {
+            // dd/mm/yyyy
+            String[] dates =  birthDateStr.split("/");
+
+            int birthYear = Integer.parseInt(dates[2]);
+            int monthOfYear = Integer.parseInt(dates[1]);
+            int dayOfMonth = Integer.parseInt(dates[0]);
+
+            LocalDate birthDate = LocalDate.of(birthYear, monthOfYear, dayOfMonth);
+            LocalDate curDate = LocalDate.now();
+            return Period.between(birthDate, curDate).getYears();
+        }
+        return 0;
+    }
+
+    private void launchInstagram(String username) {
+        Uri uri = Uri.parse("https://instagram.com/" + username);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        startActivity(intent);
+    }
+
+    // ===========================================================================================
     private void updateIdolsAdapter() {
         getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -226,16 +436,10 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
             updateVisibility(emptyFaveIllus, false);
             updateVisibility(galleryLinkBtn, true);
             updateVisibility(rearrangeContainer, true);
-//            emptyFaveIllus.setVisibility(View.GONE);
-//            galleryLinkBtn.setVisibility(View.VISIBLE);
-//            rearrangeContainer.setVisibility(View.VISIBLE);
         } else {
             updateVisibility(emptyFaveIllus, true);
             updateVisibility(galleryLinkBtn, false);
             updateVisibility(rearrangeContainer, false);
-//            emptyFaveIllus.setVisibility(View.VISIBLE);
-//            galleryLinkBtn.setVisibility(View.GONE);
-//            rearrangeContainer.setVisibility(View.GONE);
         }
     }
 
@@ -252,7 +456,61 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
                     itemTouchHelper.attachToRecyclerView(faveIdolsRV);
                 }
                 break;
+            case R.id.profile_cancel_button:
+                if (bottomSheetDialog_Profile != null) {
+                    bottomSheetDialog_Profile.dismiss();
+                }
+                break;
         }
+    }
+
+    // FaveIdol onCheckedChange
+    @Override
+    public void onCheckedChange(int position, boolean isChecked) {
+        if (!isChecked) {
+            Toast.makeText(getContext(), "Unchecked", Toast.LENGTH_SHORT).show();
+
+            PyObject mainModule = myData.getMainModule();
+            if (mainModule != null) {
+
+                // Update Favorite Column of Idol to False
+                String id = faveIdolList.get(position).getId();
+                String boolVal = "False";
+                PyObject isUpdatedStr = mainModule.callAttr("update_favorite", id, boolVal);
+                boolean isUpdated = isUpdatedStr.toBoolean();
+                Log.e(TAG, "Is Favorites Updated: " + isUpdated);
+
+                // Remove Idol from List Recycler View
+                faveIdolList.remove(position);
+                faveIdolsAdapterRV.notifyDataSetChanged();
+                Snackbar.make(getView(), "Removed from Favorites.", Snackbar.LENGTH_SHORT)
+                        .setAnchorView(getActivity().findViewById(R.id.custom_bottom_navigation))
+                        .show();
+                showEmptyIllustration();
+
+            } // end of checking main module is not null
+
+        } // end of checking is not checked
+    }
+
+    // FaveIdol onClick
+    @Override
+    public void onItemClicked(int position) {
+        if (bottomSheetDialog_Profile != null) {
+            Log.e(TAG, "Bottom Sheet Dialog NOT null");
+            Idol idol = faveIdolList.get(position);
+            populateProfileDialogSheet(idol);
+            bottomSheetDialog_Profile.show();
+        } else {
+            Log.e(TAG, "Bottom Sheet Dialog is null");
+        }
+    }
+
+    // SNS onClick
+    @Override
+    public void onItemClick(int position) {
+        SNS sns = snsList.get(position);
+        launchInstagram(sns.getUsername());
     }
 
     // ===========================================================================================
@@ -303,5 +561,39 @@ public class FavoritesFragment extends Fragment implements View.OnClickListener 
     }
 
 
+    private void retrieveIdolFaces() {
+
+        Log.e(TAG, "retrieveIdolFaces: In");
+        kpopIdols.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Log.e(TAG, "onDataChange: In");
+                for (DataSnapshot dataSnapshot: snapshot.getChildren()) {
+                    String idolId = dataSnapshot.getKey();
+                    String idolImageUrl = dataSnapshot.child("Image_Url").getValue(String.class);
+                    String idolStageName = dataSnapshot.child("Stage_Name").getValue(String.class);
+                    Log.e(TAG, "onDataChange: " + "\n" +
+                            "Idol ID: " + idolId + "\n" +
+                            "Idol Image Url: " + idolImageUrl + "\n" +
+                            "Idol Stage Name: " + idolStageName);
+
+                    for (Idol faveIdol: faveIdolList) {
+                        if (faveIdol.getId().equals(idolId)) {
+                            // Set Image Url of Idol if its Matches the ID
+                            faveIdol.setImageUrl(idolImageUrl);
+                            Log.e(TAG, "onDataChange: " + faveIdol.getImageUrl());
+                        }
+                    }
+                }
+                updateIdolsAdapter();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "onCancelled: " + error);
+            }
+
+        });
+    }
 
 } // end of class
