@@ -37,6 +37,7 @@ import com.daryl.kidolrecognizer.RecyclerView.SNSListAdapterWithRecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -59,6 +60,7 @@ public class FavoritesFragment extends Fragment
         SNSListAdapterWithRecyclerView.OnItemClickListener{
 
     private static final String TAG = FavoritesFragment.class.getSimpleName();
+    public static final String PATH = "Kpop_Idols";
 
     // Data
     private final MyData myData = MyData.getMyData();
@@ -92,12 +94,13 @@ public class FavoritesFragment extends Fragment
     private BottomSheetDialog bottomSheetDialog_Profile;
     private AppCompatImageButton cancelBtn_Profile;
     private ImageView faceIV;
+    private MaterialCardView faceCard;
     private TextView stageNameTV, realNameTV, groupTV, entertainmentTV,
             ageTV, heightTV, weightTV, bloodTypeTV, nationalityTV;
     private BottomSheetBehavior bottomSheetDialogBehavior_Profile;
 
     // Firebase
-    DatabaseReference kpopIdols = FirebaseDatabase.getInstance().getReference("Kpop_Idols");
+    DatabaseReference kpopIdols = FirebaseDatabase.getInstance().getReference(PATH);
 
     // ===========================================================================================
     // Unable to Access Views here
@@ -245,6 +248,7 @@ public class FavoritesFragment extends Fragment
         // Bottom Sheet Views
         cancelBtn_Profile = bottomSheetDialog_Profile.findViewById(R.id.profile_cancel_button);
         faceIV = bottomSheetDialog_Profile.findViewById(R.id.face_image_view);
+        faceCard = bottomSheetDialog_Profile.findViewById(R.id.face_image_card_view);
         stageNameTV = bottomSheetDialog_Profile.findViewById(R.id.stage_name_text_view);
         realNameTV = bottomSheetDialog_Profile.findViewById(R.id.real_name_text_view);
         groupTV = bottomSheetDialog_Profile.findViewById(R.id.group_name_text_view);
@@ -263,6 +267,9 @@ public class FavoritesFragment extends Fragment
     // ===========================================================================================
     private void populateProfileDialogSheet(Idol idol) {
         PyObject mainModule = myData.getMainModule();
+
+        // Face Image
+        updateIdolFaceImage(idol.getImageUrl());
 
         if (mainModule != null) {
             Log.e(TAG, "Main Module NOT null");
@@ -430,6 +437,21 @@ public class FavoritesFragment extends Fragment
         });
     }
 
+    private void updateIdolFaceImage(String imageUrl) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (imageUrl != null) {
+                    Glide.with(getContext()).load(imageUrl).into(faceIV);
+                    faceCard.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
+                } else {
+                    Glide.with(getContext()).clear(faceIV);
+                    faceCard.setOutlineProvider(null);
+                }
+            }
+        });
+    }
+
     // ===========================================================================================
     private void showEmptyIllustration() {
         if (faveIdolList.size() > 0) {
@@ -499,6 +521,7 @@ public class FavoritesFragment extends Fragment
         if (bottomSheetDialog_Profile != null) {
             Log.e(TAG, "Bottom Sheet Dialog NOT null");
             Idol idol = faveIdolList.get(position);
+            // Get from CSV
             populateProfileDialogSheet(idol);
             bottomSheetDialog_Profile.show();
         } else {

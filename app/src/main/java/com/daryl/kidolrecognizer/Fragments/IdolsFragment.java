@@ -29,7 +29,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.chaquo.python.PyObject;
 import com.daryl.kidolrecognizer.Data.Idol;
-import com.daryl.kidolrecognizer.Data.Model;
 import com.daryl.kidolrecognizer.Data.MyData;
 import com.daryl.kidolrecognizer.Data.Role;
 import com.daryl.kidolrecognizer.Data.SNS;
@@ -64,6 +63,7 @@ public class IdolsFragment extends Fragment
         View.OnKeyListener {
 
     private static final String TAG = IdolsFragment.class.getSimpleName();
+    public static final String PATH = "Kpop_Idols";
 
     // Data
     private final MyData myData = MyData.getMyData();
@@ -104,7 +104,7 @@ public class IdolsFragment extends Fragment
     MaterialButton filterBtn;
 
     // Firebase
-    DatabaseReference kpopIdols = FirebaseDatabase.getInstance().getReference("Kpop_Idols");
+    DatabaseReference kpopIdols = FirebaseDatabase.getInstance().getReference(PATH);
 
     // ===========================================================================================
     @Override
@@ -201,7 +201,7 @@ public class IdolsFragment extends Fragment
     // ===========================================================================================
     private void populateIdols() {
         // Get All Idols from CSV
-        if (myData.getAllIdols() == null) {
+//        if (myData.getAllIdols() == null) {
             PyObject mainModule = myData.getMainModule();
             PyObject idols = mainModule.callAttr("get_all_idols");
             List<PyObject> idolsList = idols.asList();
@@ -219,13 +219,33 @@ public class IdolsFragment extends Fragment
                 Idol idol = new Idol(id, stageName, groupName, isFavorite);
                 idolList.add(idol);
             }
+
+//            if (myData.getAllIdols() != null && !idolList.isEmpty()) {
+//                for (int i = 0; i < myData.getAllIdols().size(); i++) {
+//                    // Saved Idols List - Get Image URL
+//                    String lastImageUrl = myData.getAllIdols().get(i).getImageUrl();
+//                    if (lastImageUrl != null) {
+//                        Log.e(TAG, lastImageUrl);
+//                    }
+//
+//                    // Updated Idol List - Set Image URL
+//                    idolList.get(i).setImageUrl(lastImageUrl);
+//                    if (idolList.get(i).getImageUrl() != null) {
+//                        Log.e(TAG, idolList.get(i).getImageUrl());
+//                    }
+//                }
+//            }
+        if (!idolList.isEmpty()) {
+            retrieveIdolFaces();
         }
+
+//        }
         // Get the Saved Data
-        else {
-            idolList = myData.getAllIdols();
-        }
+//        else {
+//            idolList = myData.getAllIdols();
+//        }
         // Update List Recycler View
-        if (idolList.size() > 0) {
+        if (!idolList.isEmpty()) {
             updateIdolListAdapter();
         }
     }
@@ -536,8 +556,8 @@ public class IdolsFragment extends Fragment
 
     // ===========================================================================================
     private void retrieveIdolFaces() {
-
         Log.e(TAG, "retrieveIdolFaces: In");
+
         kpopIdols.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {

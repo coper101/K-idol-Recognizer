@@ -16,6 +16,7 @@ import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.daryl.kidolrecognizer.Data.Idol;
 import com.daryl.kidolrecognizer.R;
 import com.google.android.material.button.MaterialButton;
@@ -93,9 +94,13 @@ public class IdolListAdapterWithRecyclerView
         String idolImageUrl = idol.getImageUrl();
         ImageView idolFaceIV = holder.idolFaceIV;
         if (idolImageUrl != null) {
-            Glide.with(context).load(idolImageUrl).into(idolFaceIV);
+            Glide.with(context)
+                    .load(idolImageUrl)
+                    .transition(DrawableTransitionOptions.withCrossFade(1000))
+                    .into(idolFaceIV);
         } else {
-            Glide.with(context).clear(idolFaceIV);
+            Glide.with(context)
+                    .clear(idolFaceIV);
         }
     }
 
