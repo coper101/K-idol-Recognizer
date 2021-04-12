@@ -1,6 +1,10 @@
 package com.daryl.kidolrecognizer.Fragments;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -106,6 +110,10 @@ public class IdolsFragment extends Fragment
     // Firebase
     DatabaseReference kpopIdols = FirebaseDatabase.getInstance().getReference(PATH);
 
+    // Check Internet Connection
+    Network activeNetwork;
+
+
     // ===========================================================================================
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -120,6 +128,9 @@ public class IdolsFragment extends Fragment
         // -> Idol SNS
         snsList = new ArrayList<>();
         snsListAdapterRV = new SNSListAdapterWithRecyclerView(snsList, getContext(), R.layout.sns_item);
+        // Network
+        ConnectivityManager connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        activeNetwork = connectivityManager.getActiveNetwork();
     }
 
     // ===========================================================================================
@@ -160,11 +171,9 @@ public class IdolsFragment extends Fragment
                         if (!idolList.isEmpty()) {
                             retrieveIdolFaces();
                         }
+                        // Display Can't Load Image Message
+                        showNoInternetMessage();
 
-                        // Check for Internet Connection
-//                        if () {
-//
-//                        }
                         // Persist All Idols Data
                         myData.setAllIdols(idolList);
 
@@ -187,10 +196,8 @@ public class IdolsFragment extends Fragment
                 @Override
                 public void run() {
                     populateIdols();
-                    // Check for Internet Connection
-//                        if () {
-//
-//                        }
+                    // Display Can't Load Image Message
+                    showNoInternetMessage();
                 }
 
             });
@@ -201,49 +208,26 @@ public class IdolsFragment extends Fragment
     // ===========================================================================================
     private void populateIdols() {
         // Get All Idols from CSV
-//        if (myData.getAllIdols() == null) {
-            PyObject mainModule = myData.getMainModule();
-            PyObject idols = mainModule.callAttr("get_all_idols");
-            List<PyObject> idolsList = idols.asList();
-            Log.e(TAG, "Size: " + idolsList.size());
-            Log.e(TAG, idolsList.toString());
+        PyObject mainModule = myData.getMainModule();
+        PyObject idols = mainModule.callAttr("get_all_idols");
+        List<PyObject> idolsList = idols.asList();
+        Log.e(TAG, "Size: " + idolsList.size());
+        Log.e(TAG, idolsList.toString());
 
-            idolList.clear();
-            // Add Idols
-            for (PyObject faveIdol: idolsList) {
-                List<PyObject> faveIdolValues = faveIdol.asList();
-                String id = faveIdolValues.get(0).toInt() + "";
-                String stageName = faveIdolValues.get(1).toString();
-                String groupName = faveIdolValues.get(2).toString();
-                boolean isFavorite = faveIdolValues.get(3).toBoolean();
-                Idol idol = new Idol(id, stageName, groupName, isFavorite);
-                idolList.add(idol);
-            }
-
-//            if (myData.getAllIdols() != null && !idolList.isEmpty()) {
-//                for (int i = 0; i < myData.getAllIdols().size(); i++) {
-//                    // Saved Idols List - Get Image URL
-//                    String lastImageUrl = myData.getAllIdols().get(i).getImageUrl();
-//                    if (lastImageUrl != null) {
-//                        Log.e(TAG, lastImageUrl);
-//                    }
-//
-//                    // Updated Idol List - Set Image URL
-//                    idolList.get(i).setImageUrl(lastImageUrl);
-//                    if (idolList.get(i).getImageUrl() != null) {
-//                        Log.e(TAG, idolList.get(i).getImageUrl());
-//                    }
-//                }
-//            }
+        idolList.clear();
+        // Add Idols
+        for (PyObject faveIdol: idolsList) {
+            List<PyObject> faveIdolValues = faveIdol.asList();
+            String id = faveIdolValues.get(0).toInt() + "";
+            String stageName = faveIdolValues.get(1).toString();
+            String groupName = faveIdolValues.get(2).toString();
+            boolean isFavorite = faveIdolValues.get(3).toBoolean();
+            Idol idol = new Idol(id, stageName, groupName, isFavorite);
+            idolList.add(idol);
+        }
         if (!idolList.isEmpty()) {
             retrieveIdolFaces();
         }
-
-//        }
-        // Get the Saved Data
-//        else {
-//            idolList = myData.getAllIdols();
-//        }
         // Update List Recycler View
         if (!idolList.isEmpty()) {
             updateIdolListAdapter();
@@ -585,6 +569,17 @@ public class IdolsFragment extends Fragment
             }
 
         });
+    }
+
+    private void showNoInternetMessage() {
+        // No Internet Connection
+        if (activeNetwork == null) {
+            Snackbar.make(getView(), "Connect to Internet to View Images", Snackbar.LENGTH_LONG)
+                    .setAnchorView(getActivity().findViewById(R.id.custom_bottom_navigation))
+                    .show();
+        } else {
+            Log.e(TAG, "showNoInternetMessage: Connected to Internet");
+        }
     }
 
 

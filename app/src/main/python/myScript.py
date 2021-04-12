@@ -1,6 +1,6 @@
 # Files imported into python directory
-# - labels.pickle
-# - encodings.pickle
+# - labels.pickle 120421
+# - encodings.pickle 120421
 # - Kpop_Idols_090421_CSV.csv
 
 import os
