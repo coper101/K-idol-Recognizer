@@ -42,6 +42,8 @@
     <string name="profile">Profile</string>
     <string name="sort_amp_filter"><![CDATA[Sort & Filter]]></string>
     <string name="view_my_gallery">View My Gallery</string>
+    <string name="active_idols">Active Idols</string>
+    <string name="filter_gender">Gender</string>
 
     <array name="initial_zoom_value">
         <item>0.0</item>

@@ -191,13 +191,30 @@
     </style>
 
     <!-- Chips -->
-    <style name="FilterChip" parent="Widget.MaterialComponents.Chip.Filter">
+    <style name="FilterChip" parent="Widget.MaterialComponents.Chip.Choice">
         <item name="chipBackgroundColor">@drawable/idols_filter_chip_bg_selector</item>
-        <item name="chipCornerRadius">5dp</item>
         <item name="chipStrokeColor">@drawable/idols_filter_chip_stroke_selector</item>
+        <item name="chipCornerRadius">6dp</item>
         <item name="chipStrokeWidth">1dp</item>
+
         <item name="android:outlineProvider">none</item>
         <item name="elevation">0dp</item>
+
+        <item name="checkedIconTint">@color/green_accent</item>
+
+        <item name="chipStartPadding">8dp</item>
+        <item name="chipEndPadding">8dp</item>
+
+        <item name="android:textColor">@drawable/idols_filter_chip_text_selector</item>
+        <item name="android:textAppearance">@style/ChipTextAppearance</item>
+
+        <item name="rippleColor">@color/green_accent_A10</item>
+    </style>
+
+    <style name="ChipTextAppearance">
+        <item name="android:fontFamily">@font/poppins_light</item>
+        <item name="fontFamily">@font/poppins_light</item>
+        <item name="android:textSize">14sp</item>
     </style>
 
 </resources>

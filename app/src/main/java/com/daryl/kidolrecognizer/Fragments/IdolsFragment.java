@@ -1,5 +1,6 @@
 package com.daryl.kidolrecognizer.Fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -11,6 +12,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +28,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,6 +47,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -54,8 +59,10 @@ import com.google.firebase.database.ValueEventListener;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class IdolsFragment extends Fragment
         implements
@@ -102,6 +109,11 @@ public class IdolsFragment extends Fragment
     private BottomSheetDialog bottomSheetDialog_Filters;
     private BottomSheetBehavior bottomSheetDialogBehavior_Filters;
     private AppCompatImageButton cancelBtn_Filters;
+    private MaterialButton applyBtn;
+    private ChipGroup
+            genderFilterChipGroup, bloodTypeChipGroup, entertainmentChipGroup_Filter,
+            stageNameChipGroup, groupNameChipGroup, entertainmentChipGroup_Sort, groupDebutYearChipGroup;
+    private Chip activeIdols;
 
     // Search & Filter Views
     EditText searchIdolsET;
@@ -176,6 +188,9 @@ public class IdolsFragment extends Fragment
 
                         // Persist All Idols Data
                         myData.setAllIdols(idolList);
+
+                        // Add Chips Dynamically
+                        addChips();
 
                         break;
                     }
@@ -382,6 +397,18 @@ public class IdolsFragment extends Fragment
         bottomSheetDialog_Filters.setContentView(R.layout.modal_bottom_sheet_filters);
         // Bottom Sheet Views
         cancelBtn_Filters = bottomSheetDialog_Filters.findViewById(R.id.filter_cancel_button);
+        applyBtn = bottomSheetDialog_Filters.findViewById(R.id.sort_and_filter_apply_button);
+        applyBtn.setOnClickListener(this);
+        // Filter Views
+        activeIdols = bottomSheetDialog_Filters.findViewById(R.id.filter_active_idols);
+        genderFilterChipGroup = bottomSheetDialog_Filters.findViewById(R.id.filter_gender);
+        bloodTypeChipGroup = bottomSheetDialog_Filters.findViewById(R.id.filter_blood_type);
+        entertainmentChipGroup_Filter = bottomSheetDialog_Filters.findViewById(R.id.filter_entertainment);
+        // Sort Views
+        stageNameChipGroup = bottomSheetDialog_Filters.findViewById(R.id.sort_stage_name);
+        groupNameChipGroup = bottomSheetDialog_Filters.findViewById(R.id.sort_group_name);
+        entertainmentChipGroup_Sort = bottomSheetDialog_Filters.findViewById(R.id.sort_entertainment);
+        groupDebutYearChipGroup = bottomSheetDialog_Filters.findViewById(R.id.sort_group_debut_year);
         // Bottom Sheet Behavior
         bottomSheetDialogBehavior_Filters = bottomSheetDialog_Filters.getBehavior();
         Log.e(TAG, "Display Height: " + getDisplayHeight());
@@ -446,6 +473,14 @@ public class IdolsFragment extends Fragment
                 break;
             case R.id.filter_button:
                 bottomSheetDialog_Filters.show();
+                break;
+            case R.id.sort_and_filter_apply_button:
+                // Get All Selected Filters & Sort
+                HashMap<String, String> columnValueMap = selectedSortsAndFilter();
+                for (Map.Entry<String, String> entry: columnValueMap.entrySet()) {
+                    Log.e(TAG, "onClick: " + entry.getKey() + " " + entry.getValue());
+                }
+                bottomSheetDialog_Filters.dismiss();
                 break;
         }
     }
@@ -582,5 +617,76 @@ public class IdolsFragment extends Fragment
         }
     }
 
+    // Add Blood Type & Entertainments Dynamically from CSV
+    @SuppressLint("ResourceType")
+    private void addChips() {
+        PyObject mainModule = myData.getMainModule();
+        if (mainModule != null) {
+            // Get Unique Entertainment Names
+            PyObject bloodTypes = mainModule.callAttr("unique_values_from_col", "Blood Type");
+            List<PyObject> bloodTypeList = bloodTypes.asList();
+            for (int i = 0; i < bloodTypeList.size(); i++) {
+                // Add Chip to Chip Group for Each Blood Type
+                String bloodTypeString = bloodTypeList.get(i).toString();
+                Chip chip = new Chip(getContext());
+                chip.setText(bloodTypeString);
+                chip.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+                chip.setHeight(56);
+//                ChipGroup.LayoutParams layoutParams = chip.getLayoutParams() as ViewGr
+//                if (i == 0) {
+//                    layoutParams.setMarginStart(toPx(25));
+//                }
+//                if (i == bloodTypeList.size() - 1) {
+//                    layoutParams.setMarginEnd(toPx(25));
+//                }
+//                chip.setLayoutParams(layoutParams);
+                chip.setChipBackgroundColorResource(R.drawable.idols_filter_chip_bg_selector);
+                chip.setChipStrokeColorResource(R.drawable.idols_filter_chip_stroke_selector);
+                chip.setTextColor(R.drawable.idols_filter_chip_text_selector);
+                chip.setChipStrokeWidth(1);
+                chip.setChipCornerRadius(6);
+                chip.setOutlineProvider(null);
+                chip.setElevation(0);
+                chip.setChipStartPadding(8);
+                chip.setChipEndPadding(8);
+                chip.setTypeface(ResourcesCompat.getFont(getContext(), R.font.poppins_light));
+                chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+                bloodTypeChipGroup.addView(chip);
+            }
+            // Get Unique Blood Types
+        }
+    }
+
+    private int toPx(int dp) {
+        float density = getContext().getResources().getDisplayMetrics().density;
+        int px = (int) (dp * density);
+        return px;
+    }
+
+    private HashMap<String, String> selectedSortsAndFilter() {
+        HashMap<String, String> columnValueMap = new HashMap<>();
+        // -> Filters
+        // Active Idols - True or False
+        boolean isActive = activeIdols.isChecked();
+        columnValueMap.put("Active", isActive + "");
+        Log.e(TAG, "selectedSortsAndFilter: " + isActive);
+        // Gender - Male or Female
+        int genderId = genderFilterChipGroup.getCheckedChipId();
+        if (genderId != -1) {
+            Chip genderChip = bottomSheetDialog_Filters.findViewById(genderId);
+            String gender = genderChip.getText().toString();
+            columnValueMap.put("Gender", gender);
+            Log.e(TAG, "selectedSortsAndFilter: " + gender);
+        }
+        // Blood Type
+
+        // Entertainment
+        // -> Sort
+        // Stage Name
+        // Group Name
+        // Entertainment
+        // Group Debut Year
+        return columnValueMap;
+    }
 
 } // end of class

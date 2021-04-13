@@ -47,6 +47,9 @@
 
     <color name="green_accent_A1">#033A5700</color>
 
+    <color name="green_accent_A5">#0D9EEC00</color>
+
+
     <color name="yellow_accent_A2">#05FFFC6B</color>
 
 </resources>

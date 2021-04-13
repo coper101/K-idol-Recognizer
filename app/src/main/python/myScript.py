@@ -204,5 +204,22 @@ def get_all_idols():
     return idolsList
 
 
+def unique_values_from_col(columnName):
+
+    values = []
+
+    dataFileNameUser = os.path.join(os.environ["HOME"], kpop_idols_csv_filename)
+
+    exist = os.path.exists(dataFileNameUser)
+    print('Home CSV Exist? ', exist)
+
+    if exist:
+        # read csv
+        data = pd.read_csv(dataFileNameUser)
+        values = data[columnName].unique().tolist()
+
+    return values
+
+
 
 

@@ -10,151 +10,361 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingTop="25dp"
-        android:paddingBottom="25dp"
         android:background="@color/space_gray_light"
-        android:weightSum="2">
-
-    <!-- Header, Cancel Button -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginHorizontal="25dp"
         android:weightSum="10">
-        <!-- Profile Header -->
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="8.5"
-            style="@style/ModalTitle"
-            android:text="@string/sort_amp_filter"/>
-        <!-- Cancel Button -->
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/filter_cancel_button"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1.5"
-            android:layout_gravity="center"
-            style="@style/ModalCloseButton"
-            android:padding="0dp"/>
+
+        <!-- Header, Cancel Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="horizontal"
+            android:layout_weight="1"
+            android:paddingTop="25dp"
+            android:paddingHorizontal="25dp"
+            android:weightSum="10">
+            <!-- Profile Header -->
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="8.5"
+                style="@style/ModalTitle"
+                android:layout_gravity="center"
+                android:text="@string/sort_amp_filter"/>
+            <!-- Cancel Button -->
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/filter_cancel_button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.5"
+                android:layout_gravity="center"
+                style="@style/ModalCloseButton"
+                android:padding="0dp"/>
+        </LinearLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="9"
+            android:paddingBottom="80dp"
+            android:overScrollMode="never">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Filter Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Filters"
+                    android:layout_marginHorizontal="25dp"
+                    android:layout_marginTop="30dp"
+                    android:textSize="18sp"
+                    android:textColor="@color/white_200"
+                    android:fontFamily="@font/poppins_light"/>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="25dp"
+                    android:background="@color/blue_light_A20"/>
+
+                <!-- F I L T E R -->
+                <!-- Filter: Active Idols -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/filter_active_idols"
+                    android:layout_width="wrap_content"
+                    android:layout_height="56dp"
+                    android:layout_marginHorizontal="25dp"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/active_idols"
+                    style="@style/FilterChip"/>
+
+                <!-- Filter: Gender Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="25dp"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/filter_gender"
+                    android:textColor="@color/white_200"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/poppins_extra_light"
+                    app:fontFamily="@font/poppins_extra_light"/>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/filter_gender"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="15dp"
+                    app:singleSelection="true">
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/filter_gender_male"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginStart="25dp"
+                        android:layout_marginTop="20dp"
+                        android:text="Male"
+                        style="@style/FilterChip"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/filter_gender_female"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginEnd="25dp"
+                        android:layout_marginTop="20dp"
+                        android:text="Female"
+                        style="@style/FilterChip"/>
+                </com.google.android.material.chip.ChipGroup>
+
+                <!-- Filter: Blood Type Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="25dp"
+                    android:layout_marginTop="20dp"
+                    android:text="Blood Type"
+                    android:textColor="@color/white_200"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/poppins_extra_light"
+                    app:fontFamily="@font/poppins_extra_light"/>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/filter_blood_type"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="15dp"
+                    app:singleSelection="true">
+<!--                    <com.google.android.material.chip.Chip-->
+<!--                        android:id="@+id/blood_type_A"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="56dp"-->
+<!--                        android:layout_marginStart="25dp"-->
+<!--                        android:layout_marginTop="20dp"-->
+<!--                        android:text="A"-->
+<!--                        style="@style/FilterChip"/>-->
+<!--                    <com.google.android.material.chip.Chip-->
+<!--                        android:id="@+id/blood_type_B"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="56dp"-->
+<!--                        android:layout_marginTop="20dp"-->
+<!--                        android:text="B"-->
+<!--                        style="@style/FilterChip"/>-->
+<!--                    <com.google.android.material.chip.Chip-->
+<!--                        android:id="@+id/blood_type_AB"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="56dp"-->
+<!--                        android:layout_marginTop="20dp"-->
+<!--                        android:text="AB"-->
+<!--                        style="@style/FilterChip"/>-->
+<!--                    <com.google.android.material.chip.Chip-->
+<!--                        android:id="@+id/blood_type_O"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="56dp"-->
+<!--                        android:layout_marginEnd="25dp"-->
+<!--                        android:layout_marginTop="20dp"-->
+<!--                        android:text="O"-->
+<!--                        style="@style/FilterChip"/>-->
+                </com.google.android.material.chip.ChipGroup>
+
+                <!-- Filter: Entertainment Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="25dp"
+                    android:layout_marginTop="20dp"
+                    android:text="Entertainment"
+                    android:textColor="@color/white_200"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/poppins_extra_light"
+                    app:fontFamily="@font/poppins_extra_light"/>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/filter_entertainment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="15dp"
+                    app:singleSelection="true">
+
+                </com.google.android.material.chip.ChipGroup>
+
+
+                <!-- S O R T -->
+                <!-- Sort Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sort"
+                    android:layout_marginHorizontal="25dp"
+                    android:layout_marginTop="30dp"
+                    android:textSize="18sp"
+                    android:textColor="@color/white_200"
+                    android:fontFamily="@font/poppins_light"/>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="25dp"
+                    android:background="@color/blue_light_A20"/>
+
+                <!-- Sort: Stage Name Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="25dp"
+                    android:layout_marginTop="20dp"
+                    android:text="Stage Name"
+                    android:textColor="@color/white_200"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/poppins_extra_light"
+                    app:fontFamily="@font/poppins_extra_light"/>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/sort_stage_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="15dp"
+                    app:singleSelection="true">
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/sort_stage_name_a_to_z"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginStart="25dp"
+                        android:layout_marginTop="20dp"
+                        android:text="A - Z"
+                        style="@style/FilterChip"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/sort_stage_name_z_to_a"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="20dp"
+                        android:text="Z - A"
+                        style="@style/FilterChip"/>
+                </com.google.android.material.chip.ChipGroup>
+
+                <!-- Sort: Group Name Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="25dp"
+                    android:layout_marginTop="20dp"
+                    android:text="Group Name"
+                    android:textColor="@color/white_200"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/poppins_extra_light"
+                    app:fontFamily="@font/poppins_extra_light"/>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/sort_group_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="15dp"
+                    app:singleSelection="true">
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/sort_group_name_a_to_z"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginStart="25dp"
+                        android:layout_marginTop="20dp"
+                        android:text="A - Z"
+                        style="@style/FilterChip"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/sort_group_name_z_to_a"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="20dp"
+                        android:text="Z - A"
+                        style="@style/FilterChip"/>
+                </com.google.android.material.chip.ChipGroup>
+
+                <!-- Sort: Entertainment Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="25dp"
+                    android:layout_marginTop="20dp"
+                    android:text="Entertainment"
+                    android:textColor="@color/white_200"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/poppins_extra_light"
+                    app:fontFamily="@font/poppins_extra_light"/>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/sort_entertainment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="15dp"
+                    app:singleSelection="true">
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/sort_entertainment_a_to_z"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginStart="25dp"
+                        android:layout_marginTop="20dp"
+                        android:text="A - Z"
+                        style="@style/FilterChip"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/sort_entertainment_z_to_a"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="20dp"
+                        android:text="Z - A"
+                        style="@style/FilterChip"/>
+                </com.google.android.material.chip.ChipGroup>
+
+                <!-- Sort: Group Debut Year Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="25dp"
+                    android:layout_marginTop="20dp"
+                    android:text="Group Debut Year"
+                    android:textColor="@color/white_200"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/poppins_extra_light"
+                    app:fontFamily="@font/poppins_extra_light"/>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/sort_group_debut_year"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="15dp"
+                    app:singleSelection="true">
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/sort_group_debut_year_recent_to_oldest"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginStart="25dp"
+                        android:layout_marginTop="20dp"
+                        android:text="Recent - Oldest"
+                        style="@style/FilterChip"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/group_debut_year_oldest_to_recent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="20dp"
+                        android:text="Oldest - Recent"
+                        style="@style/FilterChip"/>
+                </com.google.android.material.chip.ChipGroup>
+
+            </LinearLayout>
+
+        </ScrollView>
+
     </LinearLayout>
 
-    <!-- Filter Header -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Filters"
-        android:layout_marginHorizontal="25dp"
-        android:layout_marginTop="30dp"
-        android:textSize="18sp"
-        android:textColor="@color/white_200"
-        android:fontFamily="@font/poppins_light"/>
-
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginHorizontal="25dp"
-        android:background="@color/blue_light_A20"/>
-
-    <!-- Filter: Active Idols -->
-    <com.google.android.material.chip.Chip
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="25dp"
-        android:layout_marginTop="20dp"
-        android:text="Active Idols"
-        android:textColor="@color/white_200"
-        style="@style/FilterChip"/>
-
-    <!-- Filter: Gender Header -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="25dp"
-        android:layout_marginTop="20dp"
-        android:text="Gender"
-        android:textColor="@color/white_200"
-        android:textSize="12sp"
-        android:fontFamily="@font/poppins_extra_light"
-        app:fontFamily="@font/poppins_extra_light"/>
-
-    <!-- Filter: Blood Type Header -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="25dp"
-        android:layout_marginTop="20dp"
-        android:text="Blood Type"
-        android:textColor="@color/white_200"
-        android:textSize="12sp"
-        android:fontFamily="@font/poppins_extra_light"
-        app:fontFamily="@font/poppins_extra_light"/>
-
-    <!-- Filter: Entertainment Header -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="25dp"
-        android:layout_marginTop="20dp"
-        android:text="Entertainment"
-        android:textColor="@color/white_200"
-        android:textSize="12sp"
-        android:fontFamily="@font/poppins_extra_light"
-        app:fontFamily="@font/poppins_extra_light"/>
-
-    <!-- Sort Header -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Sort"
-        android:layout_marginHorizontal="25dp"
-        android:layout_marginTop="30dp"
-        android:textSize="18sp"
-        android:textColor="@color/white_200"
-        android:fontFamily="@font/poppins_light"/>
-
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginHorizontal="25dp"
-        android:background="@color/blue_light_A20"/>
-
-    <!-- Sort: Age Header -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="25dp"
-        android:layout_marginTop="20dp"
-        android:text="Age"
-        android:textColor="@color/white_200"
-        android:textSize="12sp"
-        android:fontFamily="@font/poppins_extra_light"
-        app:fontFamily="@font/poppins_extra_light"/>
-
-    <!-- Sort: Stage Name Header -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="25dp"
-        android:layout_marginTop="20dp"
-        android:text="Stage Name"
-        android:textColor="@color/white_200"
-        android:textSize="12sp"
-        android:fontFamily="@font/poppins_extra_light"
-        app:fontFamily="@font/poppins_extra_light"/>
-
-    </LinearLayout>
-
+    <!-- Bottom Bar for Button -->
     <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/sort_and_filter_bottom_app_bar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_bar_height"
         android:layout_gravity="bottom"
         android:backgroundTint="@color/space_gray">
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/sort_and_filter_apply_button"
             android:layout_width="match_parent"
             android:layout_height="@dimen/bottom_bar_button_height"
             android:text="Apply"
