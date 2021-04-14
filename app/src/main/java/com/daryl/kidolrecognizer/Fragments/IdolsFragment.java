@@ -3,6 +3,7 @@ package com.daryl.kidolrecognizer.Fragments;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Outline;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
@@ -20,6 +21,7 @@ import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -48,6 +50,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipDrawable;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
@@ -59,7 +62,9 @@ import com.google.firebase.database.ValueEventListener;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,7 +76,8 @@ public class IdolsFragment extends Fragment
         View.OnClickListener,
         SNSListAdapterWithRecyclerView.OnItemClickListener,
         TextWatcher,
-        View.OnKeyListener {
+        View.OnKeyListener,
+        ChipGroup.OnCheckedChangeListener, CompoundButton.OnCheckedChangeListener {
 
     private static final String TAG = IdolsFragment.class.getSimpleName();
     public static final String PATH = "Kpop_Idols";
@@ -84,6 +90,8 @@ public class IdolsFragment extends Fragment
     private IdolListAdapterWithRecyclerView idolListAdapterRV;
     private ArrayList<Idol> idolList;
     private RecyclerView idolRV;
+    // for quick access of ID
+    private LinkedHashMap<String, Idol> idolMap;
 
     // -> Idol Roles
     private RolesListAdapterWithRecyclerView rolesListAdapterRV;
@@ -118,6 +126,8 @@ public class IdolsFragment extends Fragment
     // Search & Filter Views
     EditText searchIdolsET;
     MaterialButton filterBtn;
+    int sortAndFilterCount;
+    TextView noResultsTV;
 
     // Firebase
     DatabaseReference kpopIdols = FirebaseDatabase.getInstance().getReference(PATH);
@@ -133,6 +143,7 @@ public class IdolsFragment extends Fragment
         // Initialize Recycle View Components
         // -> Idols Grid List
         idolList = new ArrayList<>();
+        idolMap = new LinkedHashMap<>();
         idolListAdapterRV = new IdolListAdapterWithRecyclerView(idolList, getContext(), R.layout.idol_item);
         // -> Idol Roles
         roleList = new ArrayList<>();
@@ -143,6 +154,8 @@ public class IdolsFragment extends Fragment
         // Network
         ConnectivityManager connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         activeNetwork = connectivityManager.getActiveNetwork();
+        // Track Number of Filters & Sorts
+        sortAndFilterCount = 0;
     }
 
     // ===========================================================================================
@@ -191,6 +204,7 @@ public class IdolsFragment extends Fragment
 
                         // Add Chips Dynamically
                         addChips();
+                        enableFilterBtn(true);
 
                         break;
                     }
@@ -210,7 +224,11 @@ public class IdolsFragment extends Fragment
             Thread reloadAllIdols = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    populateIdols();
+                    if (myData.getSortsAndFilterMaps() != null) {
+                        sortAndFilterIdols(myData.getSortsAndFilterMaps());
+                    } else {
+                        populateIdols();
+                    }
                     // Display Can't Load Image Message
                     showNoInternetMessage();
                 }
@@ -222,6 +240,7 @@ public class IdolsFragment extends Fragment
 
     // ===========================================================================================
     private void populateIdols() {
+        noResultsTV.setVisibility(View.GONE);
         // Get All Idols from CSV
         PyObject mainModule = myData.getMainModule();
         PyObject idols = mainModule.callAttr("get_all_idols");
@@ -230,6 +249,7 @@ public class IdolsFragment extends Fragment
         Log.e(TAG, idolsList.toString());
 
         idolList.clear();
+        idolMap.clear();
         // Add Idols
         for (PyObject faveIdol: idolsList) {
             List<PyObject> faveIdolValues = faveIdol.asList();
@@ -239,12 +259,11 @@ public class IdolsFragment extends Fragment
             boolean isFavorite = faveIdolValues.get(3).toBoolean();
             Idol idol = new Idol(id, stageName, groupName, isFavorite);
             idolList.add(idol);
+            idolMap.put(idol.getId(), idol);
         }
+        // Retrieved Faces & Update List Recycler View
         if (!idolList.isEmpty()) {
             retrieveIdolFaces();
-        }
-        // Update List Recycler View
-        if (!idolList.isEmpty()) {
             updateIdolListAdapter();
         }
     }
@@ -343,9 +362,12 @@ public class IdolsFragment extends Fragment
         // Search & Filter
         searchIdolsET = view.findViewById(R.id.search_idols_edit_text);
         filterBtn = view.findViewById(R.id.filter_button);
+        filterBtn.setEnabled(false);
         searchIdolsET.addTextChangedListener(this);
         searchIdolsET.setOnClickListener(this::onClick);
         searchIdolsET.setOnKeyListener(this);
+        noResultsTV = view.findViewById(R.id.no_results_text_view);
+        noResultsTV.setVisibility(View.GONE);
     }
 
     private void initRVComponents(View view) {
@@ -409,6 +431,15 @@ public class IdolsFragment extends Fragment
         groupNameChipGroup = bottomSheetDialog_Filters.findViewById(R.id.sort_group_name);
         entertainmentChipGroup_Sort = bottomSheetDialog_Filters.findViewById(R.id.sort_entertainment);
         groupDebutYearChipGroup = bottomSheetDialog_Filters.findViewById(R.id.sort_group_debut_year);
+        // Sort & Filter onCheckedChange Listener
+        activeIdols.setOnCheckedChangeListener(this::onCheckedChanged);
+        genderFilterChipGroup.setOnCheckedChangeListener(this::onCheckedChanged);
+        bloodTypeChipGroup.setOnCheckedChangeListener(this::onCheckedChanged);
+        entertainmentChipGroup_Filter.setOnCheckedChangeListener(this::onCheckedChanged);
+        stageNameChipGroup.setOnCheckedChangeListener(this::onCheckedChanged);
+        groupNameChipGroup.setOnCheckedChangeListener(this::onCheckedChanged);
+        entertainmentChipGroup_Sort.setOnCheckedChangeListener(this::onCheckedChanged);
+        groupDebutYearChipGroup.setOnCheckedChangeListener(this::onCheckedChanged);
         // Bottom Sheet Behavior
         bottomSheetDialogBehavior_Filters = bottomSheetDialog_Filters.getBehavior();
         Log.e(TAG, "Display Height: " + getDisplayHeight());
@@ -455,6 +486,7 @@ public class IdolsFragment extends Fragment
         launchInstagram(sns.getUsername());
     }
 
+    // Button onClick
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -475,14 +507,72 @@ public class IdolsFragment extends Fragment
                 bottomSheetDialog_Filters.show();
                 break;
             case R.id.sort_and_filter_apply_button:
-                // Get All Selected Filters & Sort
-                HashMap<String, String> columnValueMap = selectedSortsAndFilter();
-                for (Map.Entry<String, String> entry: columnValueMap.entrySet()) {
-                    Log.e(TAG, "onClick: " + entry.getKey() + " " + entry.getValue());
+                // Get All Selected Sort & Filters
+                HashMap<String, HashMap<String, String>> sortsAndFilterMaps = selectedSortsAndFilter();
+                Log.e(TAG, "Filters Map: " + sortsAndFilterMaps.get("Filters").toString());
+                Log.e(TAG, "Sorts Map: " + sortsAndFilterMaps.get("Sorts").toString());
+                if (!sortsAndFilterMaps.get("Filters").isEmpty() || !sortsAndFilterMaps.get("Sorts").isEmpty()) {
+                    // Save and Perform Sort & Filters
+                    myData.setSortsAndFilterMaps(sortsAndFilterMaps);
+                    sortAndFilterIdols(sortsAndFilterMaps);
+                } else {
+                    // Save Empty Sort & Filters and Load All Idols
+                    myData.setSortsAndFilterMaps(null);
+                    populateIdols();
                 }
+                // Perform Sort & Filters
                 bottomSheetDialog_Filters.dismiss();
                 break;
         }
+    }
+
+    // Chip Group
+    @Override
+    public void onCheckedChanged(ChipGroup group, int checkedId) {
+        Log.e(TAG, "onCheckedChanged: " + checkedId + "");
+        updateSortAndFilterCount();
+    }
+
+    // Chip
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        Log.e(TAG, "onCheckedChanged: " + isChecked + "");
+        updateSortAndFilterCount();
+    }
+
+    private void updateSortAndFilterCount() {
+        sortAndFilterCount = 0;
+
+        if (activeIdols.isChecked())
+            sortAndFilterCount += 1;
+
+        if (genderFilterChipGroup.getCheckedChipId() != -1)
+            sortAndFilterCount += 1;
+
+        if (bloodTypeChipGroup.getCheckedChipId() != -1)
+            sortAndFilterCount += 1;
+
+        if (entertainmentChipGroup_Filter.getCheckedChipId() != -1)
+            sortAndFilterCount += 1;
+
+        if (stageNameChipGroup.getCheckedChipId() != -1)
+            sortAndFilterCount += 1;
+
+        if (groupDebutYearChipGroup.getCheckedChipId() != -1)
+            sortAndFilterCount += 1;
+
+        if (entertainmentChipGroup_Sort.getCheckedChipId() != -1)
+            sortAndFilterCount += 1;
+
+        if (groupNameChipGroup.getCheckedChipId() != -1)
+            sortAndFilterCount += 1;
+
+        if (sortAndFilterCount > 0) {
+            applyBtn.setText("Apply " + "(" + sortAndFilterCount + ")");
+        } else {
+            applyBtn.setText("Apply");
+        }
+        Log.e(TAG, sortAndFilterCount + "");
     }
 
     // ===========================================================================================
@@ -573,6 +663,15 @@ public class IdolsFragment extends Fragment
         });
     }
 
+    private void enableFilterBtn(boolean isEnabled) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                filterBtn.setEnabled(isEnabled);
+            }
+        });
+    }
+
     // ===========================================================================================
     private void retrieveIdolFaces() {
         Log.e(TAG, "retrieveIdolFaces: In");
@@ -589,11 +688,16 @@ public class IdolsFragment extends Fragment
                             "Idol ID: " + idolId + "\n" +
                             "Idol Image Url: " + idolImageUrl + "\n" +
                             "Idol Stage Name: " + idolStageName);
-                    int idolIndex = Integer.parseInt(idolId) - 1;
-                    Log.e(TAG, "onDataChange: idolIndex - " + idolIndex);
-                    Idol idol = idolList.get(idolIndex);
-                    idol.setImageUrl(idolImageUrl);
-                    Log.e(TAG, "onDataChange: " + idol.getImageUrl());
+//                    int idolIndex = Integer.parseInt(idolId) - 1;
+//                    Log.e(TAG, "onDataChange: idolIndex - " + idolIndex);
+//                    Idol idol = idolList.get(idolIndex);
+//                    idol.setImageUrl(idolImageUrl);
+//                    Log.e(TAG, "onDataChange: " + idol.getImageUrl());
+
+                    if (idolMap.containsKey(idolId)) {
+                        int idolIdx = idolList.indexOf(idolMap.get(idolId));
+                        idolList.get(idolIdx).setImageUrl(idolImageUrl);
+                    }
                 }
                 updateIdolListAdapter();
             }
@@ -618,42 +722,57 @@ public class IdolsFragment extends Fragment
     }
 
     // Add Blood Type & Entertainments Dynamically from CSV
-    @SuppressLint("ResourceType")
     private void addChips() {
         PyObject mainModule = myData.getMainModule();
         if (mainModule != null) {
-            // Get Unique Entertainment Names
+            // Get Unique Blood Types
             PyObject bloodTypes = mainModule.callAttr("unique_values_from_col", "Blood Type");
             List<PyObject> bloodTypeList = bloodTypes.asList();
+            Log.e(TAG, bloodTypeList.toString());
             for (int i = 0; i < bloodTypeList.size(); i++) {
-                // Add Chip to Chip Group for Each Blood Type
                 String bloodTypeString = bloodTypeList.get(i).toString();
-                Chip chip = new Chip(getContext());
-                chip.setText(bloodTypeString);
-                chip.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
-                chip.setHeight(56);
-//                ChipGroup.LayoutParams layoutParams = chip.getLayoutParams() as ViewGr
-//                if (i == 0) {
-//                    layoutParams.setMarginStart(toPx(25));
-//                }
-//                if (i == bloodTypeList.size() - 1) {
-//                    layoutParams.setMarginEnd(toPx(25));
-//                }
-//                chip.setLayoutParams(layoutParams);
-                chip.setChipBackgroundColorResource(R.drawable.idols_filter_chip_bg_selector);
-                chip.setChipStrokeColorResource(R.drawable.idols_filter_chip_stroke_selector);
-                chip.setTextColor(R.drawable.idols_filter_chip_text_selector);
-                chip.setChipStrokeWidth(1);
-                chip.setChipCornerRadius(6);
-                chip.setOutlineProvider(null);
-                chip.setElevation(0);
-                chip.setChipStartPadding(8);
-                chip.setChipEndPadding(8);
-                chip.setTypeface(ResourcesCompat.getFont(getContext(), R.font.poppins_light));
-                chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-                bloodTypeChipGroup.addView(chip);
+                if (!bloodTypeString.equals("nan")) {
+                    // Add Chip to Chip Group for Each Blood Type
+                    Chip chip = new Chip(getContext());
+                    ChipDrawable chipDrawable = ChipDrawable.createFromAttributes(getContext(), null, 0, R.style.FilterChip);
+                    chip.setChipDrawable(chipDrawable);
+                    chip.setText(bloodTypeString);
+                    chip.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+                    chip.setHeight(ViewGroup.LayoutParams.MATCH_PARENT);
+                    chip.setMinHeight(toPx(56));
+                    chip.setMinimumHeight(toPx(56));
+                    chip.setTextAppearance(getContext(), R.style.ChipTextAppearance);
+                    chip.setChipEndPadding(toPx(12));
+                    chip.setChipStartPadding(toPx(12));
+                    chip.setOutlineProvider(null);
+                    chip.setElevation(0);
+                    bloodTypeChipGroup.addView(chip);
+                }
             }
-            // Get Unique Blood Types
+            // Get Unique Entertainment Names
+            PyObject entNames = mainModule.callAttr("unique_values_from_col", "Entertainment");
+            List<PyObject> entNameList = entNames.asList();
+            Log.e(TAG, entNameList.toString());
+            for (int i = 0; i < entNameList.size(); i++) {
+                String entNameString = entNameList.get(i).toString();
+                if (!entNameString.equals("nan")) {
+                    // Add Chip to Chip Group for Each Blood Type
+                    Chip chip = new Chip(getContext());
+                    ChipDrawable chipDrawable = ChipDrawable.createFromAttributes(getContext(), null, 0, R.style.FilterChip);
+                    chip.setChipDrawable(chipDrawable);
+                    chip.setText(entNameString);
+                    chip.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+                    chip.setHeight(ViewGroup.LayoutParams.MATCH_PARENT);
+                    chip.setMinHeight(toPx(56));
+                    chip.setMinimumHeight(toPx(56));
+                    chip.setTextAppearance(getContext(), R.style.ChipTextAppearance);
+                    chip.setChipEndPadding(toPx(12));
+                    chip.setChipStartPadding(toPx(12));
+                    chip.setOutlineProvider(null);
+                    chip.setElevation(0);
+                    entertainmentChipGroup_Filter.addView(chip);
+                }
+            }
         }
     }
 
@@ -663,30 +782,161 @@ public class IdolsFragment extends Fragment
         return px;
     }
 
-    private HashMap<String, String> selectedSortsAndFilter() {
-        HashMap<String, String> columnValueMap = new HashMap<>();
+    // ===========================================================================================
+    private HashMap<String, HashMap<String, String>> selectedSortsAndFilter() {
+        HashMap<String, HashMap<String, String>> sortAndFilterMaps = new HashMap<>();
+        HashMap<String, String> filtersMap = new HashMap<>();
+        HashMap<String, String> sortsMap = new HashMap<>();
         // -> Filters
         // Active Idols - True or False
         boolean isActive = activeIdols.isChecked();
-        columnValueMap.put("Active", isActive + "");
-        Log.e(TAG, "selectedSortsAndFilter: " + isActive);
+        if (isActive) {
+            filtersMap.put("Active", "True");
+        }
         // Gender - Male or Female
         int genderId = genderFilterChipGroup.getCheckedChipId();
         if (genderId != -1) {
             Chip genderChip = bottomSheetDialog_Filters.findViewById(genderId);
             String gender = genderChip.getText().toString();
-            columnValueMap.put("Gender", gender);
-            Log.e(TAG, "selectedSortsAndFilter: " + gender);
+            filtersMap.put("Gender", "'" + gender + "'");
         }
         // Blood Type
-
+        for (int i = 0; i < bloodTypeChipGroup.getChildCount(); i++){
+            Chip bloodTypeChip = (Chip) bloodTypeChipGroup.getChildAt(i);
+            if (bloodTypeChip.isChecked()) {
+                String bloodType = bloodTypeChip.getText().toString();
+                filtersMap.put("Blood Type", "'" + bloodType + "'");
+            }
+        }
         // Entertainment
+        for (int i = 0; i < entertainmentChipGroup_Filter.getChildCount(); i++){
+            Chip entChip = (Chip) entertainmentChipGroup_Filter.getChildAt(i);
+            if (entChip.isChecked()) {
+                String ent = entChip.getText().toString();
+                filtersMap.put("Entertainment", "'" + ent + "'");
+            }
+        }
         // -> Sort
         // Stage Name
+        int stageNameOrderId = stageNameChipGroup.getCheckedChipId();
+        if (stageNameOrderId != -1) {
+            Chip stageNameOrderChip = stageNameChipGroup.findViewById(stageNameOrderId);
+            String stageNameOrder = stageNameOrderChip.getText().toString();
+            int orderBoolNum = stageNameOrder.equals("A - Z") ? 1 : 0;
+            sortsMap.put("Stage Name", orderBoolNum + "");
+        }
         // Group Name
+        int groupNameOrderId = groupNameChipGroup.getCheckedChipId();
+        if (groupNameOrderId != -1) {
+            Chip groupNameOrderIdChip = groupNameChipGroup.findViewById(groupNameOrderId);
+            String groupNameOrder = groupNameOrderIdChip.getText().toString();
+            int orderBoolNum = groupNameOrder.equals("A - Z") ? 1 : 0;
+            sortsMap.put("Group Name", orderBoolNum + "");
+        }
         // Entertainment
+        int entOrderId = entertainmentChipGroup_Sort.getCheckedChipId();
+        if (entOrderId != -1) {
+            Chip entOrderChip = entertainmentChipGroup_Sort.findViewById(entOrderId);
+            String entOrder = entOrderChip.getText().toString();
+            int orderBoolNum = entOrder.equals("A - Z") ? 1 : 0;
+            sortsMap.put("Entertainment", orderBoolNum + "");
+        }
         // Group Debut Year
-        return columnValueMap;
+        int yearOrderId = groupDebutYearChipGroup.getCheckedChipId();
+        if (yearOrderId != -1) {
+            Chip yearOrderChip = groupDebutYearChipGroup.findViewById(yearOrderId);
+            String yearOrder = yearOrderChip.getText().toString();
+            int orderBoolNum = yearOrder.equals("Recent - Oldest") ? 0 : 1;
+            sortsMap.put("Group Debut Year", orderBoolNum + "");
+        }
+        sortAndFilterMaps.put("Filters", filtersMap);
+        sortAndFilterMaps.put("Sorts", sortsMap);
+        return sortAndFilterMaps;
+    }
+
+    private void sortAndFilterIdols(HashMap<String, HashMap<String, String>> sortsAndFilterMaps) {
+
+        // Store Filter Values (Conditional Format)
+        String filterQuery = "";
+
+        // Store Sort Values (Column Names & Order Numbers)
+        final int sortSize = sortsAndFilterMaps.get("Sorts").size();
+        String[] sortColumns = new String[sortSize];
+        int[] sortOrders = new int[sortSize];
+
+        int count = 0;
+        for (Map.Entry<String, HashMap<String, String>> entry: sortsAndFilterMaps.entrySet()) {
+            Log.e(TAG, "onClick: " + entry.getKey());
+            for (Map.Entry<String, String> e: entry.getValue().entrySet()) {
+                // Log.e(TAG, "onClick: " + e.getKey() + " " + e.getValue());
+                // -> Build Filter Query
+                if (entry.getKey().equals("Filters")) {
+                    String column = e.getKey().replace(" ", "_");
+                    String value = e.getValue();
+                    filterQuery += column + " == " + value;
+                    if (count != entry.getValue().entrySet().size() - 1)
+                        filterQuery += " & ";
+                }
+                // -> Add to Sort Array
+                else {
+                    String column = e.getKey().replace(" ", "_");
+                    int value = Integer.parseInt(e.getValue());
+                    sortColumns[count] = column;
+                    sortOrders[count] = value;
+                }
+                count += 1;
+            }
+            count = 0;
+        }
+
+        Log.e(TAG, "Filter Query: " + filterQuery);
+        Log.e(TAG, "Sort Columns " + Arrays.toString(sortColumns));
+        Log.e(TAG, "Sort Values " + Arrays.toString(sortOrders));
+
+        // Populate Idols
+        populateSortedAndFilteredIdols(filterQuery, sortColumns, sortOrders);
+    }
+
+    private void populateSortedAndFilteredIdols(String filterQuery, String[] sortColumns, int[] sortOrders) {
+        PyObject mainModule = myData.getMainModule();
+        if (mainModule != null) {
+            PyObject idols = mainModule.callAttr("sort_and_filter", filterQuery, sortColumns, sortOrders);
+
+            List<PyObject> idolsList = idols.asList();
+            Log.e(TAG, "Size: " + idolsList.size());
+            Log.e(TAG, idolsList.toString());
+
+            if (!idolsList.isEmpty()) {
+                Log.e(TAG, "Idols Found");
+                noResultsTV.setVisibility(View.GONE);
+
+                idolList.clear();
+                idolMap.clear();
+
+                // Add Idols
+                for (PyObject curIdol: idolsList) {
+                    List<PyObject> idolValues = curIdol.asList();
+                    String id = idolValues.get(0).toInt() + "";
+                    String stageName = idolValues.get(1).toString();
+                    String groupName = idolValues.get(2).toString();
+                    boolean isFavorite = idolValues.get(3).toBoolean();
+                    Idol idol = new Idol(id, stageName, groupName, isFavorite);
+                    idolList.add(idol);
+                    idolMap.put(idol.getId(), idol);
+                }
+
+                // Retrieved Faces & Update List Recycler View
+                retrieveIdolFaces();
+                updateIdolListAdapter();
+            } else {
+                Log.e(TAG, "No Idols Found");
+                noResultsTV.setVisibility(View.VISIBLE);
+            }
+
+            Log.e(TAG, "Idol List: " + idolList.toString());
+            Log.e(TAG, "Idol Map: " + idolMap.toString());
+
+        }
     }
 
 } // end of class

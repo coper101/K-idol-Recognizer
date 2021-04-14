@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import com.chaquo.python.PyObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 // Singleton Pattern
 public class MyData {
@@ -18,6 +19,8 @@ public class MyData {
     private float lastZoomValue = -1.0f;
     private ArrayList<Idol> allIdols;
 
+    private HashMap<String, HashMap<String, String>> sortsAndFilterMaps;
+
     // Instantiation only allowed within this class
     private MyData() {}
 
@@ -26,6 +29,7 @@ public class MyData {
         return myData;
     }
 
+    // Idol Image
     public Bitmap getRecognizedIdolBitmapFull() {
         return recognizedIdolBitmapFull;
     }
@@ -42,6 +46,7 @@ public class MyData {
         this.recognizedIdolBitmapCrop = recognizedIdolBitmapCrop;
     }
 
+    // Idol
     public Idol getIdol() {
         return idol;
     }
@@ -58,6 +63,7 @@ public class MyData {
         MyData.myData = myData;
     }
 
+    // Main Module
     public PyObject getMainModule() {
         return mainModule;
     }
@@ -66,6 +72,7 @@ public class MyData {
         this.mainModule = mainModule;
     }
 
+    // Zoom
     public float getLastZoomValue() {
         return lastZoomValue;
     }
@@ -74,6 +81,7 @@ public class MyData {
         this.lastZoomValue = lastZoomValue;
     }
 
+    // Idols
     public ArrayList<Idol> getAllIdols() {
         return allIdols;
     }
@@ -81,5 +89,15 @@ public class MyData {
     public void setAllIdols(ArrayList<Idol> allIdols) {
         this.allIdols = allIdols;
     }
+
+    // Filter & Sort
+    public HashMap<String, HashMap<String, String>> getSortsAndFilterMaps() {
+        return sortsAndFilterMaps;
+    }
+
+    public void setSortsAndFilterMaps(HashMap<String, HashMap<String, String>> sortsAndFilterMaps) {
+        this.sortsAndFilterMaps = sortsAndFilterMaps;
+    }
+
 
 } // end class

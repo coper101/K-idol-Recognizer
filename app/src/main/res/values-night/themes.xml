@@ -209,6 +209,8 @@
         <item name="android:textAppearance">@style/ChipTextAppearance</item>
 
         <item name="rippleColor">@color/green_accent_A10</item>
+        <item name="height">56dp</item>
+
     </style>
 
     <style name="ChipTextAppearance">

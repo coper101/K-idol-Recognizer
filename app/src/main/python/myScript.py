@@ -221,5 +221,60 @@ def unique_values_from_col(columnName):
     return values
 
 
+def filter_idols(data, query):
+    idolsDataFrame = data.query(query)
+    return idolsDataFrame
+
+
+def sort_idols(data, columnNames, columnNamesOrder):
+    colNames = []
+    colNamesOrder = []
+
+    for columnName in columnNames:
+        colNames.append(columnName)
+
+    for columnNameOrder in columnNamesOrder:
+        colNamesOrder.append(columnNameOrder)
+
+    # ascending order? -> 1 - true, 0 - false
+    return data.sort_values(by=colNames, ascending=colNamesOrder)
+
+
+def sort_and_filter(query, columnNames, columnNamesOrder):
+
+    idolsList = []
+
+    dataFileNameUser = os.path.join(os.environ["HOME"], kpop_idols_csv_filename)
+
+    exist = os.path.exists(dataFileNameUser)
+    print('Home CSV Exist? ', exist)
+
+    if exist:
+        # read csv
+        data = pd.read_csv(dataFileNameUser)
+
+        # sort & filter idols
+        data.columns = [column.replace(" ", "_") for column in data.columns]
+
+        if len(columnNames) > 0:
+            sortedIdols = sort_idols(data, columnNames, columnNamesOrder)
+        else:
+            sortedIdols = data
+
+        if len(query) > 0:
+            filteredAndSortedIdols = filter_idols(sortedIdols, query)
+        else:
+            filteredAndSortedIdols = sortedIdols
+
+        # columns needed
+        filteredAndSortedIdols = filteredAndSortedIdols[['Id', 'Stage_Name', 'Group_Name', 'Favorite']]
+
+        # to list
+        filteredAndSortedIdolsList = filteredAndSortedIdols.values.tolist()
+
+        idolsList = filteredAndSortedIdolsList
+
+    return idolsList
+
 
 

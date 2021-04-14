@@ -45,7 +45,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="9"
-            android:paddingBottom="80dp"
+            android:paddingBottom="100dp"
             android:overScrollMode="never">
 
             <LinearLayout
@@ -98,13 +98,13 @@
                     android:id="@+id/filter_gender"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="25dp"
                     app:chipSpacingHorizontal="15dp"
                     app:singleSelection="true">
                     <com.google.android.material.chip.Chip
                         android:id="@+id/filter_gender_male"
                         android:layout_width="wrap_content"
                         android:layout_height="56dp"
-                        android:layout_marginStart="25dp"
                         android:layout_marginTop="20dp"
                         android:text="Male"
                         style="@style/FilterChip"/>
@@ -112,7 +112,6 @@
                         android:id="@+id/filter_gender_female"
                         android:layout_width="wrap_content"
                         android:layout_height="56dp"
-                        android:layout_marginEnd="25dp"
                         android:layout_marginTop="20dp"
                         android:text="Female"
                         style="@style/FilterChip"/>
@@ -134,38 +133,10 @@
                     android:id="@+id/filter_blood_type"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="25dp"
                     app:chipSpacingHorizontal="15dp"
                     app:singleSelection="true">
-<!--                    <com.google.android.material.chip.Chip-->
-<!--                        android:id="@+id/blood_type_A"-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="56dp"-->
-<!--                        android:layout_marginStart="25dp"-->
-<!--                        android:layout_marginTop="20dp"-->
-<!--                        android:text="A"-->
-<!--                        style="@style/FilterChip"/>-->
-<!--                    <com.google.android.material.chip.Chip-->
-<!--                        android:id="@+id/blood_type_B"-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="56dp"-->
-<!--                        android:layout_marginTop="20dp"-->
-<!--                        android:text="B"-->
-<!--                        style="@style/FilterChip"/>-->
-<!--                    <com.google.android.material.chip.Chip-->
-<!--                        android:id="@+id/blood_type_AB"-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="56dp"-->
-<!--                        android:layout_marginTop="20dp"-->
-<!--                        android:text="AB"-->
-<!--                        style="@style/FilterChip"/>-->
-<!--                    <com.google.android.material.chip.Chip-->
-<!--                        android:id="@+id/blood_type_O"-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="56dp"-->
-<!--                        android:layout_marginEnd="25dp"-->
-<!--                        android:layout_marginTop="20dp"-->
-<!--                        android:text="O"-->
-<!--                        style="@style/FilterChip"/>-->
+
                 </com.google.android.material.chip.ChipGroup>
 
                 <!-- Filter: Entertainment Header -->
@@ -184,8 +155,10 @@
                     android:id="@+id/filter_entertainment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="25dp"
                     app:chipSpacingHorizontal="15dp"
-                    app:singleSelection="true">
+                    app:singleSelection="true"
+                    app:singleLine="false">
 
                 </com.google.android.material.chip.ChipGroup>
 
@@ -361,7 +334,8 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_bar_height"
         android:layout_gravity="bottom"
-        android:backgroundTint="@color/space_gray">
+        android:backgroundTint="@color/space_gray"
+        style="@style/ButtonBottomBar">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/sort_and_filter_apply_button"
