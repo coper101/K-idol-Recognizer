@@ -61,8 +61,7 @@ import java.util.Map;
 import java.util.Random;
 
 
-public class RecognitionActivity extends AppCompatActivity
-        implements View.OnClickListener, CompoundButton.OnCheckedChangeListener, SNSListAdapterWithRecyclerView.OnItemClickListener {
+public class RecognitionActivity extends AppCompatActivity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener, SNSListAdapterWithRecyclerView.OnItemClickListener {
 
     private static final String TAG = RecognitionActivity.class.getSimpleName();
 
@@ -261,11 +260,11 @@ public class RecognitionActivity extends AppCompatActivity
                     "Difference in Nano: " + (end - start));
 
             // Faces To Java List
-            List<PyObject> stageNameAndBboxList = stageNameAndBbox.asList();
-            Log.e(TAG, stageNameAndBboxList.toString());
+            List<PyObject> idsFaceLocationsList = stageNameAndBbox.asList();
+            Log.e(TAG, idsFaceLocationsList.toString());
 
             // Check for Empty List of Faces
-            if (stageNameAndBboxList.isEmpty()) {
+            if (idsFaceLocationsList.isEmpty()) {
                 Log.e(TAG, "No Match");
                 setViewValue(stageNameTV, "No Match");
                 setViewValue(realNameTV, "Try again");
@@ -278,7 +277,7 @@ public class RecognitionActivity extends AppCompatActivity
                 updateIdolProfileScroll(true);
             }
 
-            for (PyObject IdAndBboxE: stageNameAndBboxList) {
+            for (PyObject IdAndBboxE: idsFaceLocationsList) {
 
                 updateOutlineProvider(0);
 
@@ -666,7 +665,7 @@ public class RecognitionActivity extends AppCompatActivity
         public void onSlide(@NonNull View bottomSheet, float slideOffset) {
             // Log.e(TAG, "Current SlideOffSet: " + slideOffset);
             // Log.e(TAG, "Last SlideOffSet: " + lastSlideOffSet);
-            // Swipping up
+            // Swiping up
             if (slideOffset > lastSlideOffSet) {
                 if (slideOffset > 0.99f) {
                     getWindow().setStatusBarColor(getColor(R.color.space_gray));
@@ -681,7 +680,7 @@ public class RecognitionActivity extends AppCompatActivity
                     backBtn.setVisibility(View.GONE);
                 }
             }
-            // Swipping Down
+            // Swiping Down
             else if (slideOffset < lastSlideOffSet) {
                 if (slideOffset < 0.99f) {
                     getWindow().setStatusBarColor(getColor(R.color.transparent));

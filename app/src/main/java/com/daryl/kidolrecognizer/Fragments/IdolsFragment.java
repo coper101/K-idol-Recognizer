@@ -16,14 +16,17 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -73,11 +76,11 @@ public class IdolsFragment extends Fragment
         implements
         IdolListAdapterWithRecyclerView.OnItemCheckedChangeListener,
         IdolListAdapterWithRecyclerView.OnItemClickedListener,
-        View.OnClickListener,
+        View.OnClickListener, View.OnTouchListener,
         SNSListAdapterWithRecyclerView.OnItemClickListener,
         TextWatcher,
-        View.OnKeyListener,
-        ChipGroup.OnCheckedChangeListener, CompoundButton.OnCheckedChangeListener {
+        ChipGroup.OnCheckedChangeListener, CompoundButton.OnCheckedChangeListener,
+        TextView.OnEditorActionListener {
 
     private static final String TAG = IdolsFragment.class.getSimpleName();
     public static final String PATH = "Kpop_Idols";
@@ -364,8 +367,8 @@ public class IdolsFragment extends Fragment
         filterBtn = view.findViewById(R.id.filter_button);
         filterBtn.setEnabled(false);
         searchIdolsET.addTextChangedListener(this);
-        searchIdolsET.setOnClickListener(this::onClick);
-        searchIdolsET.setOnKeyListener(this);
+        searchIdolsET.setOnTouchListener(this::onTouch);
+        searchIdolsET.setOnEditorActionListener(this::onEditorAction);
         noResultsTV = view.findViewById(R.id.no_results_text_view);
         noResultsTV.setVisibility(View.GONE);
     }
@@ -500,9 +503,6 @@ public class IdolsFragment extends Fragment
                     bottomSheetDialog_Filters.dismiss();
                 }
                 break;
-            case R.id.search_idols_edit_text:
-                Toast.makeText(getContext(), "edit text clicked", Toast.LENGTH_SHORT).show();
-                break;
             case R.id.filter_button:
                 bottomSheetDialog_Filters.show();
                 break;
@@ -524,6 +524,19 @@ public class IdolsFragment extends Fragment
                 bottomSheetDialog_Filters.dismiss();
                 break;
         }
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        switch (v.getId()) {
+            case R.id.search_idols_edit_text:
+                filterBtn.setVisibility(View.GONE);
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) searchIdolsET.getLayoutParams();
+                params.weight = 10f;
+                searchIdolsET.setLayoutParams(params);
+                return false;
+        }
+        return false;
     }
 
     // Chip Group
@@ -619,23 +632,32 @@ public class IdolsFragment extends Fragment
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-
     }
 
     @Override
     public void afterTextChanged(Editable s) {
-        searchIdolsET.clearFocus();
     }
 
     @Override
-    public boolean onKey(View v, int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_ENTER) {
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        if (actionId == EditorInfo.IME_ACTION_DONE) {
             InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(searchIdolsET.getWindowToken(), 0);
             filterBtn.setVisibility(View.VISIBLE);
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) searchIdolsET.getLayoutParams();
+            params.weight = 7f;
+            searchIdolsET.setLayoutParams(params);
+
+            // Search Idol
+            String searchText = searchIdolsET.getText().toString();
+            if (searchText.isEmpty()) {
+                populateIdols();
+            } else {
+                idolListAdapterRV.getFilter().filter(searchText);
+            }
             searchIdolsET.clearFocus();
         }
-        return false;
+        return true;
     }
 
     // ===========================================================================================

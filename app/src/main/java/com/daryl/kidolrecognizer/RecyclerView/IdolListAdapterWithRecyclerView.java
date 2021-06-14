@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -22,10 +24,13 @@ import com.daryl.kidolrecognizer.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class IdolListAdapterWithRecyclerView
-        extends RecyclerView.Adapter<IdolListAdapterWithRecyclerView.IdolViewHolder> {
+        extends RecyclerView.Adapter<IdolListAdapterWithRecyclerView.IdolViewHolder>
+        implements Filterable {
 
     private final List<Idol> idolList;
     private final Context context;
@@ -156,5 +161,39 @@ public class IdolListAdapterWithRecyclerView
             });
         }
     } // end of view holder class
+
+    @Override
+    public Filter getFilter() {
+        return filter;
+    }
+
+    Filter filter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<Idol> filteredIdols = new ArrayList<>();
+            if (constraint == null || constraint.length() == 0) {
+                filteredIdols.addAll(idolList);
+            } else {
+                String filterKey = constraint.toString().trim();
+
+                for (Idol idol: idolList) {
+                    if (idol.getStageName().toLowerCase().contains(filterKey)) {
+                        filteredIdols.add(idol);
+                    }
+                }
+            }
+            FilterResults filterResults = new FilterResults();
+            filterResults.values = filteredIdols;
+            return filterResults;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            // Populate with filtered idols
+            idolList.clear();
+            idolList.addAll((List) results.values);
+            notifyDataSetChanged();
+        }
+    };
 
 } // end of class

@@ -63,7 +63,8 @@
                 android:paddingLeft="15dp"
                 android:hint="Search Idols"
                 android:textColorHint="@color/white_200_A50"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                android:imeOptions="actionDone"/>
 
             <!-- Filter Button -->
             <com.google.android.material.button.MaterialButton
